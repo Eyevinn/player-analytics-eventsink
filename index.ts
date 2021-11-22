@@ -2,11 +2,9 @@ import { Validator } from './Validator/JSONValidator';
 import Logger from "./logging/logger";
 const querystring = require('querystring');
 
-
 exports.handler = (event, context, callback) => {
   const validator = new Validator(Logger);
   const request = event.Records[0].cf.request;
-
   let response = {
     status: '200',
     statusDescription: 'OK',

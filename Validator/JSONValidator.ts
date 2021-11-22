@@ -4,7 +4,6 @@ import * as path from "path";
 import winston from 'winston';
 import Ajv from "ajv"
 
-
 export class Validator implements EventValidator {
   logger: winston.Logger;
   eventSchema: any;
@@ -22,7 +21,7 @@ export class Validator implements EventValidator {
     const validator = new Ajv();
     const validate = validator.compile(this.eventSchema);
     const valid = validate(event);
-    console.log(`Event ${JSON.stringify(event)} is ${valid ? "valid" : "NOT valid"}`);
+    this.logger.debug(`Event ${JSON.stringify(event)} is ${valid ? "valid" : "NOT valid"}`);
     return valid;
   }
 
