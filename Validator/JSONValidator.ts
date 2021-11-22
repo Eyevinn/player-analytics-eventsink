@@ -21,9 +21,7 @@ export class Validator implements EventValidator {
     const validator = new Ajv();
     const validate = validator.compile(this.eventSchema);
     const valid = validate(event);
-    this.logger.debug(
-      `Event ${JSON.stringify(event)} is ${valid ? 'valid' : 'NOT valid'}`
-    );
+    this.logger.debug(`Event ${JSON.stringify(event)} is ${valid ? 'valid' : 'NOT valid'}`);
     return valid;
   }
 
@@ -32,10 +30,9 @@ export class Validator implements EventValidator {
    * @param eventList the list with event objects
    */
   validateEventList(eventList: Array<Object>): any {
-    eventList.forEach((event) => {
-      const valid = this.validateEvent(event);
-      if (!valid) return valid;
-    });
+    for (const event of eventList) {
+      if (!this.validateEvent(event)) return false;
+    }
     return true;
   }
 

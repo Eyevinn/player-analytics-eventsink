@@ -39,7 +39,6 @@ const invalidEvents = [
   {
     event: 'LIVE',
     sessionId: '123-125-987',
-    timestamp: -1,
     playhead: 'test',
     duration: -1,
   },
@@ -48,7 +47,6 @@ const invalidEvents = [
     sessionId: '123-213-987',
     timestamp: -1,
     playhead: 'test',
-    duration: -1,
     payload: {
       live: true,
       contentId: 123,
@@ -70,9 +68,7 @@ describe('JSONValidator', () => {
   });
 
   it('return false if an invalid event is provided', async () => {
-    invalidEvents.forEach((event) => {
-      const resp = validator.validateEvent(event);
+      const resp = validator.validateEventList(invalidEvents);
       expect(resp).toBe(false);
-    });
   });
 });
