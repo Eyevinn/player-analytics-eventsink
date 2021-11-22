@@ -1,8 +1,8 @@
-import { EventValidator } from '../interfaces'
-import * as fs from "fs";
-import * as path from "path";
+import { EventValidator } from '../interfaces';
+import * as fs from 'fs';
+import * as path from 'path';
 import winston from 'winston';
-import Ajv from "ajv"
+import Ajv from 'ajv';
 
 export class Validator implements EventValidator {
   logger: winston.Logger;
@@ -21,7 +21,9 @@ export class Validator implements EventValidator {
     const validator = new Ajv();
     const validate = validator.compile(this.eventSchema);
     const valid = validate(event);
-    this.logger.debug(`Event ${JSON.stringify(event)} is ${valid ? "valid" : "NOT valid"}`);
+    this.logger.debug(
+      `Event ${JSON.stringify(event)} is ${valid ? 'valid' : 'NOT valid'}`
+    );
     return valid;
   }
 
@@ -30,7 +32,7 @@ export class Validator implements EventValidator {
    * @param eventList the list with event objects
    */
   validateEventList(eventList: Array<Object>): any {
-    eventList.forEach(event => {
+    eventList.forEach((event) => {
       const valid = this.validateEvent(event);
       if (!valid) return valid;
     });
@@ -39,7 +41,9 @@ export class Validator implements EventValidator {
 
   loadSchema(): Object {
     const filePath = `../resources/schema.json`;
-    const encodeData = JSON.parse(fs.readFileSync(path.resolve(__dirname, filePath), "utf-8"));
+    const encodeData = JSON.parse(
+      fs.readFileSync(path.resolve(__dirname, filePath), 'utf-8')
+    );
     return encodeData;
   }
 }

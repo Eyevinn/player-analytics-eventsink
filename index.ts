@@ -1,5 +1,5 @@
 import { Validator } from './Validator/JSONValidator';
-import Logger from "./logging/logger";
+import Logger from './logging/logger';
 import querystring from 'querystring';
 
 export const handler = async (event: any) => {
@@ -8,14 +8,18 @@ export const handler = async (event: any) => {
     statusCode: 200,
     statusDescription: 'OK',
     headers: {
-      'cache-control': [{
-        key: 'Cache-Control',
-        value: 'max-age=1000'
-      }],
-      'content-type': [{
-        key: 'Content-Type',
-        value: 'text/html'
-      }]
+      'cache-control': [
+        {
+          key: 'Cache-Control',
+          value: 'max-age=1000',
+        },
+      ],
+      'content-type': [
+        {
+          key: 'Content-Type',
+          value: 'text/html',
+        },
+      ],
     },
     body: {},
   };
