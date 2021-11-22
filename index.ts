@@ -1,12 +1,11 @@
 import { Validator } from './Validator/JSONValidator';
 import Logger from "./logging/logger";
-const querystring = require('querystring');
+import querystring from 'querystring';
 
-exports.handler = (event, context, callback) => {
+export const handler = async (event: any) => {
   const validator = new Validator(Logger);
-  const request = event.Records[0].cf.request;
   let response = {
-    status: '200',
+    statusCode: 200,
     statusDescription: 'OK',
     headers: {
       'cache-control': [{
@@ -18,26 +17,25 @@ exports.handler = (event, context, callback) => {
         value: 'text/html'
       }]
     },
-    body: "",
+    body: {},
   };
 
-  if (request.method === 'POST') {
-    const body = Buffer.from(request.body.data, 'base64').toString();
-    const playerEvent = querystring.parse(body);
+  if (event.httpMethod === 'POST') {
     let validEvent: any;
-    if (Array.isArray(playerEvent)) {
-      validEvent = validator.validateEventList(playerEvent);
+    if (Array.isArray(JSON.parse(event.body))) {
+      validEvent = validator.validateEventList(JSON.parse(event.body));
     } else {
-      validEvent = validator.validateEvent(playerEvent);
+      validEvent = validator.validateEvent(JSON.parse(event.body));
     }
-    if (validEvent) {
-      response.status = '200';
-      response.statusDescription = 'OK';
-    } else {
-      response.status = '400';
+    if (!validEvent) {
+      response.statusCode = 400;
       response.statusDescription = 'Bad Request';
-      response.body = JSON.stringify(validEvent.errors);
+    } else {
+      response.body = event.body;
     }
+    return response;
   }
-  callback(null, response);
+  response.statusCode = 400;
+  response.statusDescription = 'Bad Request';
+  return response;
 };

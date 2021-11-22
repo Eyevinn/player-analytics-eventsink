@@ -1,4 +1,4 @@
-import winston from 'winston';
+import Logger from "../logging/logger";
 import { Validator } from '../Validator/JSONValidator';
 
 const validEvent = {
@@ -59,9 +59,9 @@ const invalidEvents = [{
   }
 }];
 
-const validator = new Validator(winston.createLogger());
+const validator = new Validator(Logger);
 
-describe("JSON Event data", () => {
+describe("JSONValidator", () => {
   it('validates a single event', async () => {
     const resp = validator.validateEvent(validEvent);
     expect(resp).toBe(true);
