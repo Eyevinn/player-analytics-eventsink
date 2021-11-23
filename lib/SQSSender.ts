@@ -1,4 +1,9 @@
-import  { SQSClient, SendMessageCommand, SendMessageCommandOutput, SQSClientConfig} from "@aws-sdk/client-sqs";
+import {
+  SQSClient,
+  SendMessageCommand,
+  SendMessageCommandOutput,
+  SendMessageCommandInput,
+} from '@aws-sdk/client-sqs';
 import { EventSender } from '../types/interfaces';
 import winston from 'winston';
 
@@ -11,31 +16,38 @@ export class SQSSender implements EventSender {
     this.logger = logger;
   }
 
-  async pushToQueue(event: any, isArray: boolean): Promise<any> {
+  async pushToQueue(body: any, isArray: boolean): Promise<any> {
     if (isArray) {
-      const eventList = event as Array<any>;
+      const eventList = body as Array<any>;
       const eventListPromises = eventList.map(async (event) => {
         return await this.sendSQSMessage(event);
       });
       return await Promise.all(eventListPromises);
-    }
-    else {
-      return await this.sendSQSMessage(event);
+    } else {
+      return await this.sendSQSMessage(body);
     }
   }
 
-  async sendSQSMessage(message: any): Promise<SendMessageCommandOutput> {
-    const params = {
-      MessageAttributes: message,
+  async sendSQSMessage(event: Object): Promise<SendMessageCommandOutput> {
+    const params: SendMessageCommandInput = {
+      MessageAttributes: {
+        Event: {
+          DataType: 'String',
+          StringValue: event['event'],
+        },
+        Time: {
+          DataType: 'String',
+          StringValue: event['timestamp'],
+        },
+      },
       QueueUrl: process.env.SQS_QUEUE_URL,
-      MessageBody: "Player event"
+      MessageBody: JSON.stringify(event),
     };
     const sendMessageCommand = new SendMessageCommand(params);
     try {
       const sendMessageResult = await this.SQSClient.send(sendMessageCommand);
       return sendMessageResult;
-    }
-    catch (err) {
+    } catch (err) {
       this.logger.error(err);
       return err;
     }

@@ -11,6 +11,6 @@ export interface EventValidator {
 export interface EventSender {
   logger: winston.Logger;
   SQSClient: SQSClient;
-  pushToQueue(event: Object, isArray: boolean): Promise<any>;
-  sendSQSMessage(message: any): Promise<SendMessageCommandOutput>;
+  pushToQueue(body: Object, isArray: boolean): Promise<any>;
+  sendSQSMessage(event: Object): Promise<SendMessageCommandOutput>;
 }
