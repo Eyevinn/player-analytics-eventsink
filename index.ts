@@ -1,6 +1,6 @@
-import { Validator } from './Validator/JSONValidator';
+import { Validator } from './lib/JSONValidator';
+import { SQSSender } from './lib/SQSSender';
 import Logger from './logging/logger';
-import querystring from 'querystring';
 
 export const handler = async (event: any) => {
   const validator = new Validator(Logger);
@@ -26,7 +26,9 @@ export const handler = async (event: any) => {
 
   if (event.httpMethod === 'POST') {
     let validEvent: any;
+    let isArray = false;
     if (Array.isArray(JSON.parse(event.body))) {
+      isArray = true;
       validEvent = validator.validateEventList(JSON.parse(event.body));
     } else {
       validEvent = validator.validateEvent(JSON.parse(event.body));
@@ -35,11 +37,11 @@ export const handler = async (event: any) => {
       response.statusCode = 400;
       response.statusDescription = 'Bad Request';
     } else {
-      response.body = event.body;
+      const sqsSender = new SQSSender(Logger);
+      const resp = await sqsSender.pushToQueue(event.body, isArray);
+      response.body = JSON.stringify(resp);
     }
     return response;
   }
-  response.statusCode = 400;
-  response.statusDescription = 'Bad Request';
   return response;
 };

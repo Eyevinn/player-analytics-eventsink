@@ -1,5 +1,5 @@
 import Logger from '../logging/logger';
-import { Validator } from '../Validator/JSONValidator';
+import { Validator } from '../lib/JSONValidator';
 
 const validEvent = {
   event: 'VOD',

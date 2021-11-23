@@ -1,4 +1,4 @@
-import { EventValidator } from '../interfaces';
+import { EventValidator } from '../types/interfaces';
 import * as fs from 'fs';
 import * as path from 'path';
 import winston from 'winston';
