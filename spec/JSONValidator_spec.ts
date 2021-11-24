@@ -2,7 +2,7 @@ import Logger from '../logging/logger';
 import { Validator } from '../lib/JSONValidator';
 
 const validEvent = {
-  event: 'VOD',
+  event: 'init',
   sessionId: '123-456-789',
   timestamp: -1,
   playhead: -1,
@@ -20,7 +20,7 @@ const validEvent = {
 };
 const invalidEvents = [
   {
-    event: 'LIVE',
+    event: 'init',
     sessionId: '123-456-987',
     timestamp: -1,
     playhead: 'test',
@@ -37,13 +37,13 @@ const invalidEvents = [
     },
   },
   {
-    event: 'LIVE',
+    event: 'init',
     sessionId: '123-125-987',
     playhead: 'test',
     duration: -1,
   },
   {
-    event: 'LIVE',
+    event: 'init',
     sessionId: '123-213-987',
     timestamp: -1,
     playhead: 'test',

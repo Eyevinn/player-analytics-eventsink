@@ -11,10 +11,10 @@ describe('event-sink module', () => {
     sqsMock.reset();
   });
 
-  it('can validate an incoming POST request with a valid payload', async () => {
+  it('can validate an incoming POST request with a valid payload and push it to SQS', async () => {
     const sqsResp = { MessageId: '12345678-4444-5555-6666-111122223333' };
     const payload = {
-      event: 'VOD',
+      event: 'init',
       sessionId: '123-456-789',
       timestamp: -1,
       playhead: -1,
@@ -47,7 +47,7 @@ describe('event-sink module', () => {
 
   it('can validate an incoming POST request with an invalid payload', async () => {
     const payload = {
-      event: 'LIVE',
+      event: 'init',
       sessionId: 789,
       timestamp: -1,
       playhead: -1,
@@ -91,7 +91,7 @@ describe('event-sink module', () => {
         },
       },
       { // valid Event
-        event: 'LIVE',
+        event: 'init',
         sessionId: '123-456-789',
         timestamp: -1,
         playhead: -1,
