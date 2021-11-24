@@ -9,7 +9,7 @@ const validEvent = {
   duration: -1,
   payload: {
     live: false,
-    contentId: '',
+    contentId: {},
     contentUrl: '',
     drmType: '',
     userId: '',
@@ -32,7 +32,7 @@ const invalidEvents = [
       drmType: '',
       userId: '',
       deviceId: '',
-      deviceModel: '',
+      deviceModel: 123,
       deviceType: '',
     },
   },
@@ -62,7 +62,7 @@ const invalidEvents = [
 const validator = new Validator(Logger);
 
 describe('JSONValidator', () => {
-  it('validates a single event', async () => {
+  fit('validates a single event', async () => {
     const resp = validator.validateEvent(validEvent);
     expect(resp).toBe(true);
   });

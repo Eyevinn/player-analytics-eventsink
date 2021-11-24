@@ -1,68 +1,82 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "schema.json",
+  "$schema":"http://json-schema.org/draft-07/schema#",
+  "type": "object",
   "definitions": {
-    "PlayerAnalyticsClientModule": {
-      "properties": {
-        "bitrateChanged": {
-          "type": "object"
-        },
-        "buffered": {
-          "type": "object"
-        },
-        "buffering": {
-          "type": "object"
-        },
-        "error": {
-          "type": "object"
-        },
-        "heartbeat": {
-          "type": "object"
-        },
-        "init": {
-          "type": "object"
-        },
-        "loaded": {
-          "type": "object"
-        },
-        "loading": {
-          "type": "object"
-        },
-        "pause": {
-          "type": "object"
-        },
-        "play": {
-          "type": "object"
-        },
-        "playing": {
-          "type": "object"
-        },
-        "resume": {
-          "type": "object"
-        },
-        "seeked": {
-          "type": "object"
-        },
-        "seeking": {
-          "type": "object"
-        },
-        "stopped": {
-          "type": "object"
-        },
-        "warning": {
-          "type": "object"
-        }
+    "properties": {
+      "bitrate_changed": {
+        "type": "object",
+        "$ref": "#/definitions/TBatchEventPayload/properties/event/items/bitrate_changed"
       },
-      "type": "object"
+      "buffered": {
+        "type": "object",
+        "$ref": "#/definitions/TBatchEventPayload/properties/event/items/buffered"
+      },
+      "buffering": {
+        "type": "object",
+        "$ref": "#/definitions/TBatchEventPayload/properties/event/items/buffering"
+      },
+      "error": {
+        "type": "object",
+        "$ref": "#/definitions/TBatchEventPayload/properties/event/items/error"
+      },
+      "heartbeat": {
+        "type": "object",
+        "$ref": "#/definitions/TBatchEventPayload/properties/event/items/heartbeat"
+      },
+      "init": {
+        "type": "object",
+        "$ref": "#/definitions/TBatchEventPayload/properties/event/items/init"
+      },
+      "loaded": {
+        "type": "object",
+        "$ref": "#/definitions/TBatchEventPayload/properties/event/items/loaded"
+      },
+      "loading": {
+        "type": "object",
+        "$ref": "#/definitions/TBatchEventPayload/properties/event/items/loading"
+      },
+      "pause": {
+        "type": "object",
+        "$ref": "#/definitions/TBatchEventPayload/properties/event/items/pause"
+      },
+      "play": {
+        "type": "object",
+        "$ref": "#/definitions/TBatchEventPayload/properties/event/items/play"
+      },
+      "playing": {
+        "type": "object",
+        "$ref": "#/definitions/TBatchEventPayload/properties/event/items/playing"
+      },
+      "resume": {
+        "type": "object",
+        "$ref": "#/definitions/TBatchEventPayload/properties/event/items/resume"
+      },
+      "seeked": {
+        "type": "object",
+        "$ref": "#/definitions/TBatchEventPayload/properties/event/items/seeked"
+      },
+      "seeking": {
+        "type": "object",
+        "$ref": "#/definitions/TBatchEventPayload/properties/event/items/seeking"
+      },
+      "stopped": {
+        "type": "object",
+        "$ref": "#/definitions/TStoppedEvent"
+      },
+      "warning": {
+        "type": "object",
+        "$ref": "#/definitions/TBatchEventPayload/properties/event/items/warning"
+      }
     },
-    "Record<string,any>": {
+    "Record": {
       "type": "object"
     },
     "TBatchEventPayload": {
       "properties": {
         "event": {
           "items": {
-            "anyOf": [
-              {
+              "bitrate_changed": {
                 "allOf": [
                   {
                     "properties": {
@@ -109,7 +123,7 @@
                   }
                 ]
               },
-              {
+              "buffered": {
                 "allOf": [
                   {
                     "properties": {
@@ -136,7 +150,7 @@
                   }
                 ]
               },
-              {
+              "buffering": {
                 "allOf": [
                   {
                     "properties": {
@@ -163,7 +177,7 @@
                   }
                 ]
               },
-              {
+              "error": {
                 "allOf": [
                   {
                     "properties": {
@@ -194,7 +208,7 @@
                             "type": "string"
                           },
                           "data": {
-                            "$ref": "#/definitions/Record<string,any>"
+                            "$ref": "#/definitions/Record"
                           },
                           "message": {
                             "type": "string"
@@ -207,7 +221,7 @@
                   }
                 ]
               },
-              {
+              "init": {
                 "allOf": [
                   {
                     "properties": {
@@ -235,7 +249,7 @@
                       "payload": {
                         "allOf": [
                           {
-                            "$ref": "#/definitions/Record<string,any>"
+                            "$ref": "#/definitions/Record"
                           },
                           {
                             "properties": {
@@ -276,7 +290,7 @@
                   }
                 ]
               },
-              {
+              "loading": {
                 "allOf": [
                   {
                     "properties": {
@@ -303,7 +317,7 @@
                   }
                 ]
               },
-              {
+              "loaded": {
                 "allOf": [
                   {
                     "properties": {
@@ -330,7 +344,7 @@
                   }
                 ]
               },
-              {
+              "play": {
                 "allOf": [
                   {
                     "properties": {
@@ -357,7 +371,7 @@
                   }
                 ]
               },
-              {
+              "playing": {
                 "allOf": [
                   {
                     "properties": {
@@ -384,7 +398,7 @@
                   }
                 ]
               },
-              {
+              "pause": {
                 "allOf": [
                   {
                     "properties": {
@@ -411,7 +425,7 @@
                   }
                 ]
               },
-              {
+              "resume": {
                 "allOf": [
                   {
                     "properties": {
@@ -438,7 +452,7 @@
                   }
                 ]
               },
-              {
+              "seeking": {
                 "allOf": [
                   {
                     "properties": {
@@ -465,7 +479,7 @@
                   }
                 ]
               },
-              {
+              "seeked": {
                 "allOf": [
                   {
                     "properties": {
@@ -492,7 +506,7 @@
                   }
                 ]
               },
-              {
+              "warning": {
                 "allOf": [
                   {
                     "properties": {
@@ -523,7 +537,7 @@
                             "type": "string"
                           },
                           "data": {
-                            "$ref": "#/definitions/Record<string,any>"
+                            "$ref": "#Record"
                           },
                           "message": {
                             "type": "string"
@@ -536,10 +550,10 @@
                   }
                 ]
               },
-              {
-                "$ref": "#/definitions/TStoppedEvent"
+              "TStoppedEvent": {
+                "$ref": "#TStoppedEvent"
               },
-              {
+              "heartbeat": {
                 "allOf": [
                   {
                     "properties": {
@@ -556,7 +570,7 @@
                     "type": "object"
                   },
                   {
-                    "$ref": "#/definitions/{payload:TBatchEventPayload;}"
+                    "$ref": "#{payload:TBatchEventPayload;}"
                   },
                   {
                     "properties": {
@@ -575,7 +589,6 @@
                   }
                 ]
               }
-            ]
           },
           "type": "array"
         }
@@ -752,7 +765,7 @@
                       "type": "string"
                     },
                     "data": {
-                      "$ref": "#/definitions/Record<string,any>"
+                      "$ref": "#/definitions/Record"
                     },
                     "message": {
                       "type": "string"
@@ -793,7 +806,7 @@
                 "payload": {
                   "allOf": [
                     {
-                      "$ref": "#/definitions/Record<string,any>"
+                      "$ref": "#/definitions/Record"
                     },
                     {
                       "properties": {
@@ -1081,7 +1094,7 @@
                       "type": "string"
                     },
                     "data": {
-                      "$ref": "#/definitions/Record<string,any>"
+                      "$ref": "#/definitions/Record"
                     },
                     "message": {
                       "type": "string"
