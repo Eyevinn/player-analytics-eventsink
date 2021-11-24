@@ -1,7 +1,18 @@
 import * as main from '../index';
+import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
+import { mockClient } from 'aws-sdk-client-mock';
+
+const sqsMock = mockClient(SQSClient);
 
 describe('event-sink module', () => {
-  xit('can validate an incoming POST request with a valid payload', async () => {
+  beforeEach(() => {
+    process.env.AWS_REGION = 'us-east-1';
+    process.env.SQS_QUEUE_URL = 'https://sqs.us-east-1.amazonaws.com/1234/test-queue';
+    sqsMock.reset();
+  });
+
+  it('can validate an incoming POST request with a valid payload', async () => {
+    const sqsResp = { MessageId: '12345678-4444-5555-6666-111122223333' };
     const payload = {
       event: 'VOD',
       sessionId: '123-456-789',
@@ -24,9 +35,14 @@ describe('event-sink module', () => {
       body: JSON.stringify(payload),
       httpMethod: 'POST',
     };
-    let response = await main.handler(event);
+    sqsMock
+    .on(SendMessageCommand)
+    .resolves(sqsResp);
+
+    const response = await main.handler(event);
     expect(response.statusCode).toEqual(200);
-    expect(response.body).toEqual(JSON.stringify(payload));
+    console.log(JSON.stringify(response.body));
+    expect(response.body).toEqual(JSON.stringify(sqsResp));
   });
 
   it('can validate an incoming POST request with an invalid payload', async () => {
@@ -51,7 +67,7 @@ describe('event-sink module', () => {
       body: JSON.stringify(payload),
       httpMethod: 'POST',
     };
-    let response = await main.handler(event);
+    const response = await main.handler(event);
     expect(response.statusCode).toEqual(400);
     expect(response.statusDescription).toEqual('Bad Request');
   });
@@ -97,7 +113,7 @@ describe('event-sink module', () => {
       body: JSON.stringify(payload),
       httpMethod: 'POST',
     };
-    let response = await main.handler(event);
+    const response = await main.handler(event);
     expect(response.statusCode).toEqual(400);
     expect(response.statusDescription).toEqual('Bad Request');
   });
