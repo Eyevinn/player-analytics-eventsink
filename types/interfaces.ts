@@ -1,5 +1,5 @@
-import winston from "winston";
-import  { SQSClient, SendMessageCommandOutput } from "@aws-sdk/client-sqs";
+import winston from 'winston';
+import { SQSClient, SendMessageCommandOutput } from '@aws-sdk/client-sqs';
 
 export interface EventValidator {
   logger: winston.Logger;

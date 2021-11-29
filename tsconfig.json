@@ -6,7 +6,8 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "build",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "strictNullChecks": true
   },
   "lib": ["es2015"],
   "exclude": [

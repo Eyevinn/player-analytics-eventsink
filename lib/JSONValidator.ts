@@ -18,10 +18,17 @@ export class Validator implements EventValidator {
    * @param event the event object
    */
   validateEvent(event: Object): any {
+    if (!event) {
+      this.logger.error('Event is undefined');
+      return false;
+    }
     const validator = new Ajv();
     const validate = validator.compile(this.eventSchema);
-    const valid = validate(event);
-    this.logger.debug(`Event ${JSON.stringify(event)} is ${valid ? 'valid' : 'NOT valid'}`);
+    const valid = validate({ event });
+    if (!valid) {
+      this.logger.warn(`Event: \n ${JSON.stringify(event, null, 4)} is invalid`);
+      return valid;
+    }
     return valid;
   }
 
@@ -30,17 +37,18 @@ export class Validator implements EventValidator {
    * @param eventList the list with event objects
    */
   validateEventList(eventList: Array<Object>): any {
+    if (!eventList) {
+      this.logger.error('Event list is undefined');
+      return false;
+    }
     for (const event of eventList) {
       if (!this.validateEvent(event)) return false;
     }
     return true;
   }
 
-  loadSchema(): Object {
-    const filePath = `../resources/schema.json`;
-    const encodeData = JSON.parse(
-      fs.readFileSync(path.resolve(__dirname, filePath), 'utf-8')
-    );
-    return encodeData;
+  loadSchema(filePath?: string): Object {
+    const schemaPath = filePath ? filePath : `../resources/schema.json`;
+    return JSON.parse(fs.readFileSync(path.resolve(__dirname, schemaPath), 'utf-8'));
   }
 }

@@ -9,7 +9,7 @@ const validEvent = {
   duration: -1,
   payload: {
     live: false,
-    contentId: {},
+    contentId: '',
     contentUrl: '',
     drmType: '',
     userId: '',
@@ -37,7 +37,7 @@ const invalidEvents = [
     },
   },
   {
-    event: 'init',
+    event: 'playing',
     sessionId: '123-125-987',
     playhead: 'test',
     duration: -1,
@@ -62,13 +62,13 @@ const invalidEvents = [
 const validator = new Validator(Logger);
 
 describe('JSONValidator', () => {
-  fit('validates a single event', async () => {
+  it('validates a single event', async () => {
     const resp = validator.validateEvent(validEvent);
     expect(resp).toBe(true);
   });
 
   it('return false if an invalid event is provided', async () => {
-      const resp = validator.validateEventList(invalidEvents);
-      expect(resp).toBe(false);
+    const resp = validator.validateEventList(invalidEvents);
+    expect(resp).toBe(false);
   });
 });
