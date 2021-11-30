@@ -25,10 +25,7 @@ export class Validator implements EventValidator {
     const validator = new Ajv();
     const validate = validator.compile(this.eventSchema);
     const valid = validate({ event });
-    if (!valid) {
-      this.logger.warn(`Event: \n ${JSON.stringify(event, null, 4)} is invalid`);
-      return valid;
-    }
+    this.logger.debug(`Event: \n ${JSON.stringify(event, null, 4)} is ${valid ? "valid" : `invalid`}`);
     return valid;
   }
 
