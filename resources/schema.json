@@ -1,604 +1,516 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "player-analytics-specification",
+  "type": "object",
   "patternProperties": {
     "^.*$": {
       "anyOf": [
-        { "$ref": "#/$defs/init", "type": "object" },
-        { "$ref": "#/$defs/bitrate_changed", "type": "object" },
-        { "$ref": "#/$defs/buffered", "type": "object" },
-        { "$ref": "#/$defs/buffering", "type": "object" },
-        { "$ref": "#/$defs/error", "type": "object" },
-        { "$ref": "#/$defs/heartbeat", "type": "object" },
-        { "$ref": "#/$defs/loaded", "type": "object" },
-        { "$ref": "#/$defs/loading", "type": "object" },
-        { "$ref": "#/$defs/pause", "type": "object" },
-        { "$ref": "#/$defs/play", "type": "object" },
-        { "$ref": "#/$defs/playing", "type": "object" },
-        { "$ref": "#/$defs/resume", "type": "object" },
-        { "$ref": "#/$defs/seeked", "type": "object" },
-        { "$ref": "#/$defs/seeking", "type": "object" },
-        { "$ref": "#/$defs/stopped", "type": "object" },
-        { "$ref": "#/$defs/warning", "type": "object" }
+        { "$ref": "#/definitions/init" },
+        { "$ref": "#/definitions/bitrateChanged" },
+        { "$ref": "#/definitions/buffered" },
+        { "$ref": "#/definitions/buffering" },
+        { "$ref": "#/definitions/error" },
+        { "$ref": "#/definitions/heartbeat" },
+        { "$ref": "#/definitions/loaded" },
+        { "$ref": "#/definitions/loading" },
+        { "$ref": "#/definitions/pause" },
+        { "$ref": "#/definitions/play" },
+        { "$ref": "#/definitions/playing" },
+        { "$ref": "#/definitions/resume" },
+        { "$ref": "#/definitions/seeked" },
+        { "$ref": "#/definitions/seeking" },
+        { "$ref": "#/definitions/stopped" },
+        { "$ref": "#/definitions/warning" }
       ]
     }
   },
-  "additionalProperties": false,
-  "$defs": {
+  "definitions": {
     "Record": {
-      "$id": "Record",
+      "$id": "#Record",
       "type": "object"
     },
-    "bitrate_changed": {
-      "allOf": [
-        {
-          "properties": {
-            "duration": {
-              "type": "number"
-            },
-            "playhead": {
-              "type": "number"
-            },
-            "timestamp": {
-              "type": "number"
-            }
-          },
-          "type": "object"
+    "bitrateChanged": {
+      "required": ["event", "duration", "playhead", "timestamp", "payload"],
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "event": {
+          "enum": ["bitrate_changed"],
+          "type": "string"
         },
-        {
+        "duration": {
+          "type": "number"
+        },
+        "playhead": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "payload": {
           "properties": {
-            "event": {
-              "enum": ["bitrate_changed"],
-              "type": "string"
+            "audioBitrate": {
+              "type": "number"
             },
-            "payload": {
-              "properties": {
-                "audioBitrate": {
-                  "type": "number"
-                },
-                "bitrate": {
-                  "type": "number"
-                },
-                "height": {
-                  "type": "number"
-                },
-                "videoBitrate": {
-                  "type": "number"
-                },
-                "width": {
-                  "type": "number"
-                }
-              },
-              "type": "object"
+            "bitrate": {
+              "type": "number"
+            },
+            "height": {
+              "type": "number"
+            },
+            "videoBitrate": {
+              "type": "number"
+            },
+            "width": {
+              "type": "number"
             }
           },
+          "required": ["bitrate"],
+          "additionalProperties": false,
           "type": "object"
         }
-      ]
+      }
     },
     "buffered": {
-      "allOf": [
-        {
-          "properties": {
-            "duration": {
-              "type": "number"
-            },
-            "playhead": {
-              "type": "number"
-            },
-            "timestamp": {
-              "type": "number"
-            }
-          },
-          "type": "object"
+      "required": ["event", "duration", "playhead", "timestamp"],
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "event": {
+          "enum": ["buffered"],
+          "type": "string"
         },
-        {
-          "properties": {
-            "event": {
-              "enum": ["buffered"],
-              "type": "string"
-            }
-          },
-          "type": "object"
+        "duration": {
+          "type": "number"
+        },
+        "playhead": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
         }
-      ]
+      }
     },
     "buffering": {
-      "allOf": [
-        {
-          "properties": {
-            "duration": {
-              "type": "number"
-            },
-            "playhead": {
-              "type": "number"
-            },
-            "timestamp": {
-              "type": "number"
-            }
-          },
-          "type": "object"
+      "required": ["event", "duration", "playhead", "timestamp"],
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "event": {
+          "enum": ["buffering"],
+          "type": "string"
         },
-        {
-          "properties": {
-            "event": {
-              "enum": ["buffering"],
-              "type": "string"
-            }
-          },
-          "type": "object"
+        "duration": {
+          "type": "number"
+        },
+        "playhead": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
         }
-      ]
+      }
     },
     "error": {
-      "allOf": [
-        {
-          "properties": {
-            "duration": {
-              "type": "number"
-            },
-            "playhead": {
-              "type": "number"
-            },
-            "timestamp": {
-              "type": "number"
-            }
-          },
-          "type": "object"
+      "required": ["event", "duration", "playhead", "timestamp", "payload"],
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "event": {
+          "enum": ["error"],
+          "type": "string"
         },
-        {
+        "duration": {
+          "type": "number"
+        },
+        "playhead": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "payload": {
           "properties": {
-            "event": {
-              "enum": ["error"],
+            "category": {
               "type": "string"
             },
-            "payload": {
-              "properties": {
-                "category": {
-                  "type": "string"
-                },
-                "code": {
-                  "type": "string"
-                },
-                "data": {
-                  "$ref": "#/$defs/Record"
-                },
-                "message": {
-                  "type": "string"
-                }
-              },
-              "type": "object"
+            "code": {
+              "type": "string"
+            },
+            "data": {
+              "$ref": "#/definitions/Record"
+            },
+            "message": {
+              "type": "string"
             }
           },
+          "required": ["code"],
+          "additionalProperties": false,
           "type": "object"
         }
-      ]
+      }
     },
     "init": {
-      "allOf": [
-        {
+      "required": ["event", "duration", "playhead", "timestamp", "payload"],
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "event": {
+          "enum": ["init"],
+          "type": "string"
+        },
+        "sessionId": {
+          "type": "string"
+        },
+        "heartbeatInterval": {
+          "type": "number"
+        },
+        "duration": {
+          "type": "number"
+        },
+        "playhead": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "payload": {
           "properties": {
-            "additionalProperties": false,
-            "duration": {
-              "type": "number"
+            "contentId": {
+              "type": "string"
             },
-            "playhead": {
-              "type": "number"
+            "contentUrl": {
+              "type": "string"
             },
-            "timestamp": {
-              "type": "number"
+            "deviceId": {
+              "type": "string"
+            },
+            "deviceModel": {
+              "type": "string"
+            },
+            "deviceType": {
+              "type": "string"
+            },
+            "drmType": {
+              "type": "string"
+            },
+            "live": {
+              "type": "boolean"
+            },
+            "userId": {
+              "type": "string"
             }
           },
-          "type": "object",
-          "required": ["duration", "playhead", "timestamp"]
+          "required": ["contentId", "contentUrl", "live"],
+          "additionalProperties": false,
+          "type": "object"
+        }
+      }
+    },
+    "loading": {
+      "required": ["duration", "playhead", "timestamp", "event"],
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "event": {
+          "enum": ["loading"],
+          "type": "string"
         },
-        {
+        "duration": {
+          "type": "number"
+        },
+        "playhead": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      }
+    },
+    "loaded": {
+      "required": ["duration", "playhead", "timestamp", "event"],
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "event": {
+          "enum": ["loaded"],
+          "type": "string"
+        },
+        "duration": {
+          "type": "number"
+        },
+        "playhead": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      }
+    },
+    "play": {
+      "required": ["duration", "playhead", "timestamp", "event"],
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "duration": {
+          "type": "number"
+        },
+        "playhead": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "event": {
+          "enum": ["play"],
+          "type": "string"
+        }
+      }
+    },
+    "playing": {
+      "required": ["duration", "playhead", "timestamp", "event"],
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "event": {
+          "enum": ["playing"],
+          "type": "string"
+        },
+        "duration": {
+          "type": "number"
+        },
+        "playhead": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      }
+    },
+    "pause": {
+      "required": ["duration", "playhead", "timestamp", "event"],
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "event": {
+          "enum": ["pause"],
+          "type": "string"
+        },
+        "duration": {
+          "type": "number"
+        },
+        "playhead": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      }
+    },
+    "resume": {
+      "required": ["duration", "playhead", "timestamp", "event"],
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "event": {
+          "enum": ["resume"],
+          "type": "string"
+        },
+        "duration": {
+          "type": "number"
+        },
+        "playhead": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      }
+    },
+    "seeking": {
+      "required": ["duration", "playhead", "timestamp", "event"],
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "event": {
+          "enum": ["seeking"],
+          "type": "string"
+        },
+        "duration": {
+          "type": "number"
+        },
+        "playhead": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      }
+    },
+    "seeked": {
+      "required": ["duration", "playhead", "timestamp", "event"],
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "event": {
+          "enum": ["seeked"],
+          "type": "string"
+        },
+        "duration": {
+          "type": "number"
+        },
+        "playhead": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      }
+    },
+    "warning": {
+      "required": ["event", "duration", "playhead", "timestamp", "payload"],
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "event": {
+          "enum": ["warning"],
+          "type": "string"
+        },
+        "duration": {
+          "type": "number"
+        },
+        "playhead": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "payload": {
           "properties": {
-            "additionalProperties": false,
-            "event": {
-              "enum": ["init"],
+            "category": {
               "type": "string"
             },
-            "heartbeatInterval": {
-              "type": "number"
-            },
-            "payload": {
-              "allOf": [
-                {
-                  "$ref": "#/$defs/Record"
-                },
-                {
-                  "properties": {
-                    "additionalProperties": false,
-                    "contentId": {
-                      "type": "string"
-                    },
-                    "contentUrl": {
-                      "type": "string"
-                    },
-                    "deviceId": {
-                      "type": "string"
-                    },
-                    "deviceModel": {
-                      "type": "string"
-                    },
-                    "deviceType": {
-                      "type": "string"
-                    },
-                    "drmType": {
-                      "type": "string"
-                    },
-                    "live": {
-                      "type": "boolean"
-                    },
-                    "userId": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object",
-                  "required": [
-                    "contentId",
-                    "contentUrl",
-                    "deviceId",
-                    "deviceModel",
-                    "deviceType",
-                    "drmType",
-                    "live",
-                    "userId"
-                  ]
-                }
-              ]
-            },
-            "sessionId": {
+            "code": {
               "type": "string"
+            },
+            "data": {
+              "$ref": "#/definitions/Record"
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "required": ["code"],
+          "additionalProperties": false,
+          "type": "object"
+        }
+      }
+    },
+    "stopped": {
+      "required": ["duration", "playhead", "timestamp", "event", "sessionId"],
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "event": {
+          "enum": ["stopped"],
+          "type": "string"
+        },
+        "sessionId": {
+          "type": "string"
+        },
+        "duration": {
+          "type": "number"
+        },
+        "playhead": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "payload": {
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "events": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  { "$ref": "#/definitions/init" },
+                  { "$ref": "#/definitions/bitrateChanged" },
+                  { "$ref": "#/definitions/buffered" },
+                  { "$ref": "#/definitions/buffering" },
+                  { "$ref": "#/definitions/error" },
+                  { "$ref": "#/definitions/heartbeat" },
+                  { "$ref": "#/definitions/loaded" },
+                  { "$ref": "#/definitions/loading" },
+                  { "$ref": "#/definitions/pause" },
+                  { "$ref": "#/definitions/play" },
+                  { "$ref": "#/definitions/playing" },
+                  { "$ref": "#/definitions/resume" },
+                  { "$ref": "#/definitions/seeked" },
+                  { "$ref": "#/definitions/seeking" },
+                  { "$ref": "#/definitions/stopped" },
+                  { "$ref": "#/definitions/warning" }
+                ]
+              }
             }
           },
           "type": "object"
         }
-      ]
-    },
-    "loading": {
-      "allOf": [
-        {
-          "properties": {
-            "duration": {
-              "type": "number"
-            },
-            "playhead": {
-              "type": "number"
-            },
-            "timestamp": {
-              "type": "number"
-            }
-          },
-          "type": "object",
-          "required": ["duration", "playhead", "timestamp"]
-        },
-        {
-          "properties": {
-            "event": {
-              "enum": ["loading"],
-              "type": "string"
-            }
-          },
-          "type": "object",
-          "required": ["event"]
-        }
-      ]
-    },
-    "loaded": {
-      "allOf": [
-        {
-          "properties": {
-            "duration": {
-              "type": "number"
-            },
-            "playhead": {
-              "type": "number"
-            },
-            "timestamp": {
-              "type": "number"
-            }
-          },
-          "type": "object",
-          "required": ["duration", "playhead", "timestamp"]
-        },
-        {
-          "properties": {
-            "event": {
-              "enum": ["loaded"],
-              "type": "string"
-            }
-          },
-          "type": "object",
-          "required": ["event"]
-        }
-      ]
-    },
-    "play": {
-      "allOf": [
-        {
-          "properties": {
-            "duration": {
-              "type": "number"
-            },
-            "playhead": {
-              "type": "number"
-            },
-            "timestamp": {
-              "type": "number"
-            }
-          },
-          "type": "object",
-          "required": ["duration", "playhead", "timestamp"]
-        },
-        {
-          "properties": {
-            "event": {
-              "enum": ["play"],
-              "type": "string"
-            }
-          },
-          "type": "object",
-          "required": ["event"]
-        }
-      ]
-    },
-    "playing": {
-      "allOf": [
-        {
-          "properties": {
-            "duration": {
-              "type": "number"
-            },
-            "playhead": {
-              "type": "number"
-            },
-            "timestamp": {
-              "type": "number"
-            }
-          },
-          "type": "object",
-          "required": ["duration", "playhead", "timestamp"]
-        },
-        {
-          "properties": {
-            "event": {
-              "enum": ["playing"],
-              "type": "string"
-            }
-          },
-          "type": "object",
-          "required": ["event"]
-        }
-      ]
-    },
-    "pause": {
-      "allOf": [
-        {
-          "properties": {
-            "duration": {
-              "type": "number"
-            },
-            "playhead": {
-              "type": "number"
-            },
-            "timestamp": {
-              "type": "number"
-            }
-          },
-          "type": "object",
-          "required": ["duration", "playhead", "timestamp"]
-        },
-        {
-          "properties": {
-            "event": {
-              "enum": ["pause"],
-              "type": "string"
-            }
-          },
-          "type": "object",
-          "required": ["event"]
-        }
-      ]
-    },
-    "resume": {
-      "allOf": [
-        {
-          "properties": {
-            "duration": {
-              "type": "number"
-            },
-            "playhead": {
-              "type": "number"
-            },
-            "timestamp": {
-              "type": "number"
-            }
-          },
-          "type": "object",
-          "required": ["duration", "playhead", "timestamp"]
-        },
-        {
-          "properties": {
-            "event": {
-              "enum": ["resume"],
-              "type": "string"
-            }
-          },
-          "type": "object",
-          "required": ["event"]
-        }
-      ]
-    },
-    "seeking": {
-      "allOf": [
-        {
-          "properties": {
-            "duration": {
-              "type": "number"
-            },
-            "playhead": {
-              "type": "number"
-            },
-            "timestamp": {
-              "type": "number"
-            }
-          },
-          "type": "object",
-          "required": ["duration", "playhead", "timestamp"]
-        },
-        {
-          "properties": {
-            "event": {
-              "enum": ["seeking"],
-              "type": "string"
-            }
-          },
-          "type": "object",
-          "required": ["event"]
-        }
-      ]
-    },
-    "seeked": {
-      "allOf": [
-        {
-          "properties": {
-            "duration": {
-              "type": "number"
-            },
-            "playhead": {
-              "type": "number"
-            },
-            "timestamp": {
-              "type": "number"
-            }
-          },
-          "type": "object",
-          "required": ["duration", "playhead", "timestamp"]
-        },
-        {
-          "properties": {
-            "event": {
-              "enum": ["seeked"],
-              "type": "string"
-            }
-          },
-          "type": "object",
-          "required": ["event"]
-        }
-      ]
-    },
-    "warning": {
-      "allOf": [
-        {
-          "properties": {
-            "duration": {
-              "type": "number"
-            },
-            "playhead": {
-              "type": "number"
-            },
-            "timestamp": {
-              "type": "number"
-            }
-          },
-          "type": "object",
-          "required": ["duration", "playhead", "timestamp"]
-        },
-        {
-          "properties": {
-            "event": {
-              "enum": ["warning"],
-              "type": "string"
-            },
-            "payload": {
-              "properties": {
-                "category": {
-                  "type": "string"
-                },
-                "code": {
-                  "type": "string"
-                },
-                "data": {
-                  "$ref": "#/$defs/Record"
-                },
-                "message": {
-                  "type": "string"
-                }
-              },
-              "type": "object",
-              "required": ["category", "code", "message"]
-            }
-          },
-          "type": "object",
-          "required": ["event", "payload"]
-        }
-      ]
-    },
-    "stopped": {
-      "allOf": [
-        {
-          "properties": {
-            "duration": {
-              "type": "number"
-            },
-            "playhead": {
-              "type": "number"
-            },
-            "timestamp": {
-              "type": "number"
-            }
-          },
-          "type": "object",
-          "required": ["duration", "playhead", "timestamp"]
-        },
-        {
-          "properties": {
-            "event": {
-              "enum": ["stopped"],
-              "type": "string"
-            },
-            "sessionId": {
-              "type": "string"
-            }
-          },
-          "type": "object",
-          "required": ["event", "sessionId"]
-        }
-      ]
+      }
     },
     "heartbeat": {
-      "allOf": [
-        {
-          "properties": {
-            "duration": {
-              "type": "number"
-            },
-            "playhead": {
-              "type": "number"
-            },
-            "timestamp": {
-              "type": "number"
-            }
-          },
-          "type": "object",
-          "required": ["duration", "playhead", "timestamp"]
+      "type": "object",
+      "required": ["event", "duration", "playhead", "timestamp", "sessionId"],
+      "additionalProperties": false,
+      "properties": {
+        "event": {
+          "enum": ["heartbeat"],
+          "type": "string"
         },
-        {
+        "sessionId": {
+          "type": "string"
+        },
+        "duration": {
+          "type": "number"
+        },
+        "playhead": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "payload": {
           "properties": {
-            "event": {
-              "enum": ["heartbeat"],
-              "type": "string"
-            },
-            "sessionId": {
-              "type": "string"
+            "events": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  { "$ref": "#/definitions/init" },
+                  { "$ref": "#/definitions/bitrateChanged" },
+                  { "$ref": "#/definitions/buffered" },
+                  { "$ref": "#/definitions/buffering" },
+                  { "$ref": "#/definitions/error" },
+                  { "$ref": "#/definitions/heartbeat" },
+                  { "$ref": "#/definitions/loaded" },
+                  { "$ref": "#/definitions/loading" },
+                  { "$ref": "#/definitions/pause" },
+                  { "$ref": "#/definitions/play" },
+                  { "$ref": "#/definitions/playing" },
+                  { "$ref": "#/definitions/resume" },
+                  { "$ref": "#/definitions/seeked" },
+                  { "$ref": "#/definitions/seeking" },
+                  { "$ref": "#/definitions/stopped" },
+                  { "$ref": "#/definitions/warning" }
+                ]
+              }
             }
           },
           "type": "object",
-          "required": ["event", "sessionId"]
+          "additionalProperties": false
         }
-      ]
+      }
     }
   }
 }
