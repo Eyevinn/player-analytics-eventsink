@@ -2,7 +2,7 @@ import { Validator } from './lib/JSONValidator';
 import { SQSSender } from './lib/SQSSender';
 import Logger from './logging/logger';
 
-export const handler = async (event: any) => {
+export const handler = async (event: any = {}): Promise<any> => {
   const validator = new Validator(Logger);
   let response = {
     statusCode: 200,

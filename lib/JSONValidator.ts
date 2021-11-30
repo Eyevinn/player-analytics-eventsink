@@ -1,6 +1,5 @@
 import { EventValidator } from '../types/interfaces';
-import * as fs from 'fs';
-import * as path from 'path';
+import { schema } from '../resources/schema';
 import winston from 'winston';
 import Ajv from 'ajv';
 
@@ -10,7 +9,7 @@ export class Validator implements EventValidator {
 
   constructor(logger: winston.Logger) {
     this.logger = logger;
-    this.eventSchema = this.loadSchema();
+    this.eventSchema = schema;
   }
 
   /**
@@ -42,10 +41,5 @@ export class Validator implements EventValidator {
       if (!this.validateEvent(event)) return false;
     }
     return true;
-  }
-
-  loadSchema(filePath?: string): Object {
-    const schemaPath = filePath ? filePath : `../resources/schema.json`;
-    return JSON.parse(fs.readFileSync(path.resolve(__dirname, schemaPath), 'utf-8'));
   }
 }
