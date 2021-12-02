@@ -5,7 +5,7 @@ on:
       - master
 jobs:
   deploy_source:
-    name: Build and Deploy Lambda
+    name: Build and deploy Lambda
     strategy:
       matrix:
         node-version: [14.x]
@@ -22,7 +22,7 @@ jobs:
           npm run build --if-present
         env:
           CI: true
-      - name: Move node_modules to build
+      - name: Move node_modules to build folder
         run: mv node_modules build/node_modules
       - name: zip
         uses: montudor/action-zip@v0.1.0
