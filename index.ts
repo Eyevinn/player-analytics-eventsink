@@ -7,20 +7,7 @@ export const handler = async (event): Promise<any> => {
   let response = {
     statusCode: 200,
     statusDescription: 'OK',
-    headers: {
-      'cache-control': [
-        {
-          key: 'Cache-Control',
-          value: 'max-age=1000',
-        },
-      ],
-      'content-type': [
-        {
-          key: 'Content-Type',
-          value: 'text/html',
-        },
-      ],
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: {},
   };
 
