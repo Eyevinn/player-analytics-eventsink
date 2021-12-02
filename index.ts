@@ -2,12 +2,10 @@ import { Validator } from './lib/JSONValidator';
 import { SQSSender } from './lib/SQSSender';
 import Logger from './logging/logger';
 
-export const handler = async (event, context): Promise<any> => {
+export const handler = async (event): Promise<any> => {
   const validator = new Validator(Logger);
-  const request = event.Records[0].cf.request;
-  const body = request.body;
-  const response = {
-    status: '200',
+  let response = {
+    statusCode: 200,
     statusDescription: 'OK',
     headers: {
       'cache-control': [
@@ -23,28 +21,30 @@ export const handler = async (event, context): Promise<any> => {
         },
       ],
     },
-    body: '',
+    body: {},
   };
 
-  if (request.method === 'POST' && request.uri === '/') {
-    Logger.debug('Received POST request' + JSON.stringify(request));
+  if (event.method === 'POST' && event.uri === '/') {
+    Logger.debug('Received POST request' + JSON.stringify(event));
     let validEvent: any;
     let isArray = false;
-    if (Array.isArray(body)) {
+    if (Array.isArray(event.body)) {
       isArray = true;
-      validEvent = validator.validateEventList(body);
+      validEvent = validator.validateEventList(event.body);
     } else {
-      validEvent = validator.validateEvent(body);
+      validEvent = validator.validateEvent(event.body);
     }
     if (validEvent) {
       const sqsSender = new SQSSender(Logger);
-      const resp = JSON.stringify(await sqsSender.pushToQueue(body, isArray));
+      const resp = JSON.stringify(
+        await sqsSender.pushToQueue(event.body, isArray)
+      );
       Logger.info(`${resp}`);
-      response.status = '200';
+      response.statusCode = 200;
       response.statusDescription = 'OK';
       response.body = resp;
     } else {
-      response.status = '400';
+      response.statusCode = 400;
       response.statusDescription = 'Bad Request';
       response.body = JSON.stringify({
         message: 'Invalid player event',
@@ -55,5 +55,3 @@ export const handler = async (event, context): Promise<any> => {
   }
   return response;
 };
-
-async function validate(event: any): Promise<any> {}
