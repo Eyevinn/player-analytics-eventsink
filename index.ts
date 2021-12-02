@@ -8,10 +8,10 @@ export const handler = async (event): Promise<any> => {
     statusCode: 200,
     statusDescription: 'OK',
     headers: { 'Content-Type': 'application/json' },
-    body: {},
+    body: '{}',
   };
 
-  if (event.method === 'POST' && event.uri === '/') {
+  if (event.httpMethod === 'POST' && event.path === '/') {
     Logger.debug('Received POST request' + JSON.stringify(event));
     let validEvent: any;
     let isArray = false;
@@ -23,9 +23,7 @@ export const handler = async (event): Promise<any> => {
     }
     if (validEvent) {
       const sqsSender = new SQSSender(Logger);
-      const resp = JSON.stringify(
-        await sqsSender.pushToQueue(event.body, isArray)
-      );
+      const resp = JSON.stringify(await sqsSender.pushToQueue(event.body, isArray));
       Logger.info(`${resp}`);
       response.statusCode = 200;
       response.statusDescription = 'OK';

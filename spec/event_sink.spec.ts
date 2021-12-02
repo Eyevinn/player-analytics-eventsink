@@ -9,8 +9,8 @@ let request: any;
 describe('event-sink module', () => {
   beforeEach(() => {
     request = {
-      uri: '/',
-      method: 'POST',
+      path: '/',
+      httpMethod: 'POST',
       clientIp: '2001:cdba::3257:9652',
       headers: {
         'user-agent': [
@@ -56,9 +56,9 @@ describe('event-sink module', () => {
     }
   });
 
-  it('should ignore request if "uri" != "/" ', async () => {
+  it('should ignore request if "path" != "/" ', async () => {
     const event = request;
-    event.uri = '/validate';
+    event.path = '/validate';
     event.body = { event: 'live-event' };
     const response = await main.handler(event);
     expect(response.statusCode).toEqual(200);
