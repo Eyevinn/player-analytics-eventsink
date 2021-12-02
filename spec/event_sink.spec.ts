@@ -26,7 +26,7 @@ describe('event-sink module', () => {
           },
         ],
       },
-      body: {},
+      body: '{}',
     };
     process.env.AWS_REGION = 'us-east-1';
     process.env.SQS_QUEUE_URL = 'https://sqs.us-east-1.amazonaws.com/1234/test-queue';
@@ -37,7 +37,7 @@ describe('event-sink module', () => {
     const sqsResp = { MessageId: '12345678-4444-5555-6666-111122223333' };
     const event = request;
     for (const payload of valid_events) {
-      event.body = payload;
+      event.body = JSON.stringify(payload);
       sqsMock.on(SendMessageCommand).resolves(sqsResp);
 
       const response = await main.handler(event);
@@ -49,7 +49,7 @@ describe('event-sink module', () => {
   it('can validate an incoming POST request with an invalid payload', async () => {
     const event = request;
     for (const payload of invalid_events) {
-      event.body = payload;
+      event.body = JSON.stringify(payload);
       const response = await main.handler(event);
       expect(response.statusCode).toEqual(400);
       expect(response.statusDescription).toEqual('Bad Request');
@@ -59,7 +59,7 @@ describe('event-sink module', () => {
   it('should ignore request if "path" != "/" ', async () => {
     const event = request;
     event.path = '/validate';
-    event.body = { event: 'live-event' };
+    event.body = JSON.stringify({ event: 'live-event' });
     const response = await main.handler(event);
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
@@ -102,7 +102,7 @@ describe('event-sink module', () => {
       },
     ];
     const event = request;
-    event.body = payload;
+    event.body = JSON.stringify(payload);
     const response = await main.handler(event);
     expect(response.statusCode).toEqual(400);
     expect(response.statusDescription).toEqual('Bad Request');

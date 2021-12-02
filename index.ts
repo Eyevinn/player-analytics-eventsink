@@ -13,17 +13,18 @@ export const handler = async (event): Promise<any> => {
 
   if (event.httpMethod === 'POST' && event.path === '/') {
     Logger.debug('Received POST request' + JSON.stringify(event));
+    const body = JSON.parse(event.body);
     let validEvent: any;
     let isArray = false;
-    if (Array.isArray(event.body)) {
+    if (Array.isArray(body)) {
       isArray = true;
-      validEvent = validator.validateEventList(event.body);
+      validEvent = validator.validateEventList(body);
     } else {
-      validEvent = validator.validateEvent(event.body);
+      validEvent = validator.validateEvent(body);
     }
     if (validEvent) {
       const sqsSender = new SQSSender(Logger);
-      const resp = JSON.stringify(await sqsSender.pushToQueue(event.body, isArray));
+      const resp = JSON.stringify(await sqsSender.pushToQueue(body, isArray));
       Logger.info(`${resp}`);
       response.statusCode = 200;
       response.statusDescription = 'OK';
