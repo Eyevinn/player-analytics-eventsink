@@ -2,7 +2,7 @@ name: Deploy to Lambda
 on:
   push:
     branches:
-      - master
+      - main
 jobs:
   deploy_source:
     name: Build and deploy Lambda
