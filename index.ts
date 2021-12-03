@@ -1,5 +1,5 @@
 import { Validator } from './lib/JSONValidator';
-import { SQSSender } from './lib/SQSSender';
+import Sender from './lib/Sender';
 import Logger from './logging/logger';
 
 export const handler = async (event): Promise<any> => {
@@ -23,12 +23,11 @@ export const handler = async (event): Promise<any> => {
       validEvent = validator.validateEvent(body);
     }
     if (validEvent) {
-      const sqsSender = new SQSSender(Logger);
-      const resp = JSON.stringify(await sqsSender.pushToQueue(body, isArray));
-      Logger.info(`${resp}`);
       response.statusCode = 200;
       response.statusDescription = 'OK';
-      response.body = resp;
+      let sender = new Sender(Logger);
+      const resp = await sender.send(validEvent, isArray);
+      response.body = JSON.stringify(resp);
     } else {
       response.statusCode = 400;
       response.statusDescription = 'Bad Request';
