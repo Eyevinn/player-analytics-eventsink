@@ -66,7 +66,7 @@ describe('event-sink module', () => {
     expect(response.statusDescription).toEqual('OK');
   });
 
-  it('should not push to SQS queue if env is not set ', async () => {
+  it('should not push to SQS queue if env is not set', async () => {
     process.env.SQS_QUEUE_URL = undefined;
     const sqsResp = { MessageId: '12345678-4444-5555-6666-111122223333' };
     const event = request;
