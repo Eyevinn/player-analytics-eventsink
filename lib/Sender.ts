@@ -31,7 +31,7 @@ export default class Sender implements EventSender {
     if (EventSender) {
       this.sender = new EventSender(this.logger);
     } else {
-      this.logger.error('No event sender found');
+      this.logger.warn('No event sender found');
       this.sender = null;
     }
   }
