@@ -12,21 +12,14 @@ export const handler = async (event): Promise<any> => {
   };
 
   if (event.httpMethod === 'POST' && event.path === '/') {
-    Logger.debug('Received POST request' + JSON.stringify(event));
     const body = JSON.parse(event.body);
     let validEvent: any;
-    let isArray = false;
-    if (Array.isArray(body)) {
-      isArray = true;
-      validEvent = validator.validateEventList(body);
-    } else {
-      validEvent = validator.validateEvent(body);
-    }
+    validEvent = validator.validateEvent(body);
     if (validEvent) {
       response.statusCode = 200;
       response.statusDescription = 'OK';
       let sender = new Sender(Logger);
-      const resp = await sender.send(validEvent, isArray);
+      const resp = await sender.send(validEvent);
       response.body = JSON.stringify(resp);
     } else {
       response.statusCode = 400;

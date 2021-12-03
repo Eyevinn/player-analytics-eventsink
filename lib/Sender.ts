@@ -1,24 +1,38 @@
 import winston from 'winston';
-import { EventSender, QueueEvent } from '../types/interfaces';
+import { EventSender } from '../types/interfaces';
 
 export default class Sender implements EventSender {
   logger: winston.Logger;
+  private sender: any;
 
   constructor(logger: winston.Logger) {
     this.logger = logger;
   }
 
-  async send(event: {}, isArray: boolean): Promise<{}> {
+  /**
+   *
+   * @param event the event object to send
+   * @returns an object with the response from the event sender
+   */
+  async send(event: any): Promise<{}> {
+    await this.getSender();
+    if (this.sender) {
+      return this.sender.pushToQueue(event);
+    } else {
+      return {};
+    }
+  }
+
+  private async getSender() {
     let EventSender: any;
-    let sender: QueueEvent;
     if (process.env.SQS_QUEUE_URL !== 'undefined') {
       EventSender = (await import('./SQSSender')).default;
     }
-    if (!EventSender) {
+    if (EventSender) {
+      this.sender = new EventSender(this.logger);
+    } else {
       this.logger.error('No event sender found');
-      return {};
+      this.sender = null;
     }
-    sender = new EventSender(this.logger);
-    return await sender.pushToQueue(event, isArray);
   }
 }

@@ -15,19 +15,7 @@ export default class SQSEvent implements QueueEvent {
     this.logger = logger;
   }
 
-  async pushToQueue(body: any, isArray: boolean): Promise<any> {
-    if (isArray) {
-      const eventList = body as Array<any>;
-      const eventListPromises = eventList.map(async (event) => {
-        return await this.sendMessage(event);
-      });
-      return await Promise.all(eventListPromises);
-    } else {
-      return await this.sendMessage(body);
-    }
-  }
-
-  async sendMessage(event: Object): Promise<{}> {
+  async pushToQueue(event: Object): Promise<any> {
     const params: SendMessageCommandInput = {
       MessageAttributes: {
         Event: {
@@ -47,9 +35,10 @@ export default class SQSEvent implements QueueEvent {
     const sendMessageCommand = new SendMessageCommand(params);
     try {
       const sendMessageResult = await this.Client.send(sendMessageCommand);
+      this.logger.info(`Response from SQS: ${JSON.stringify(sendMessageResult)}`);
       return sendMessageResult;
     } catch (err) {
-      this.logger.error(err);
+      this.logger.error(JSON.stringify(err));
       return err;
     }
   }

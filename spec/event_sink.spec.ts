@@ -29,8 +29,7 @@ describe('event-sink module', () => {
       body: '{}',
     };
     process.env.AWS_REGION = 'us-east-1';
-    process.env.SQS_QUEUE_URL =
-      'https://sqs.us-east-1.amazonaws.com/1234/test-queue';
+    process.env.SQS_QUEUE_URL = 'https://sqs.us-east-1.amazonaws.com/1234/test-queue';
     sqsMock.reset();
   });
 
@@ -55,6 +54,42 @@ describe('event-sink module', () => {
       expect(response.statusCode).toEqual(400);
       expect(response.statusDescription).toEqual('Bad Request');
     }
+  });
+
+  it('can validate an incoming POST request with an invalid payload with multiple events', async () => {
+    const event = request;
+    event.body = JSON.stringify({
+      event: 'heartbeat',
+      sessionId: '',
+      timestamp: 0,
+      playhead: 0,
+      duration: 0,
+      payload: {
+        events: [
+          { // valid event
+            event: 'loading',
+            timestamp: 0,
+            playhead: 0,
+            duration: 0,
+          },
+          { // invalid event
+            event: 'loaded',
+            timestamp: 0,
+          },
+        ],
+      },
+    });
+    const response = await main.handler(event);
+    expect(response.statusCode).toEqual(400);
+    expect(response.statusDescription).toEqual('Bad Request');
+  });
+
+  it('can validate an incoming POST request with an empty payload', async () => {
+    const event = request;
+    event.body = JSON.stringify({});
+    const response = await main.handler(event);
+    expect(response.statusCode).toEqual(400);
+    expect(response.statusDescription).toEqual('Bad Request');
   });
 
   it('should ignore request if "path" != "/" ', async () => {
@@ -84,49 +119,5 @@ describe('event-sink module', () => {
     expect(response.statusDescription).toEqual('OK');
     expect(sqsMock.calls()).toHaveSize(0);
     expect(response.body).toEqual('{}');
-  });
-
-  it('can validate an incoming POST request with a payload of an array with an invalid event', async () => {
-    const payload = [
-      {
-        event: 'resume',
-        sessionId: 789,
-        timestamp: -1,
-        playhead: -1,
-        payload: {
-          live: false,
-          contentId: '',
-          contentUrl: '',
-          drmType: '',
-          userId: '',
-          deviceId: '',
-          deviceModel: '',
-          deviceType: '',
-        },
-      },
-      {
-        // valid Event
-        event: 'init',
-        sessionId: '123-456-789',
-        timestamp: -1,
-        playhead: -1,
-        duration: -1,
-        payload: {
-          live: true,
-          contentId: '',
-          contentUrl: '',
-          drmType: '',
-          userId: '',
-          deviceId: '',
-          deviceModel: '',
-          deviceType: '',
-        },
-      },
-    ];
-    const event = request;
-    event.body = JSON.stringify(payload);
-    const response = await main.handler(event);
-    expect(response.statusCode).toEqual(400);
-    expect(response.statusDescription).toEqual('Bad Request');
   });
 });

@@ -9,12 +9,11 @@ export interface EventValidator {
 
 export abstract class EventSender {
   logger: winston.Logger;
-  abstract send(event: Object, isArray: boolean): Promise<{}>;
+  abstract send(event: any, isArray: boolean): Promise<{}>;
 }
 
 export abstract class QueueEvent {
   logger: winston.Logger;
   Client: any;
-  abstract pushToQueue(body: Object, isArray: boolean): Promise<{}>;
-  abstract sendMessage(event: Object): Promise<{}>;
+  abstract pushToQueue(body: Object): Promise<{}>;
 }
