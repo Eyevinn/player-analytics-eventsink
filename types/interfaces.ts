@@ -9,11 +9,11 @@ export interface EventValidator {
 
 export interface EventSender {
   logger: winston.Logger;
-  send(event: any, isArray: boolean): Promise<{}>;
+  send(event: Object): Promise<Object>;
 }
 
 export abstract class AbstractQueueAdapter {
   logger: winston.Logger;
-  Client: any;
-  abstract pushToQueue(body: Object): Promise<{}>;
+  client: any;
+  abstract pushToQueue(body: Object): Promise<Object>;
 }

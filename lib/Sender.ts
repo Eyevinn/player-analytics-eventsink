@@ -3,7 +3,6 @@ import { EventSender } from '../types/interfaces';
 
 export default class Sender implements EventSender {
   logger: winston.Logger;
-  private sender: any;
 
   constructor(logger: winston.Logger) {
     this.logger = logger;
@@ -14,25 +13,19 @@ export default class Sender implements EventSender {
    * @param event the event object to send
    * @returns an object with the response from the event sender
    */
-  async send(event: any): Promise<{}> {
-    await this.getQueueAdapter();
-    if (this.sender) {
-      return this.sender.pushToQueue(event);
-    } else {
-      return {};
-    }
-  }
-
-  private async getQueueAdapter() {
+  async send(event: Object): Promise<Object> {
     let QueueAdapter: any;
-    if (process.env.SQS_QUEUE_URL !== 'undefined') {
-      QueueAdapter = (await import('./SqsQueueAdapter')).default;
+    let queue: any;
+
+    switch (process.env.QUEUE_TYPE) {
+      case 'SQS':
+        QueueAdapter = (await import('./SqsQueueAdapter')).default;
+        break;
+      default:
+        this.logger.warn('No queue type specified');
+        return {};
     }
-    if (QueueAdapter) {
-      this.sender = new QueueAdapter(this.logger);
-    } else {
-      this.logger.warn('No event sender found');
-      this.sender = null;
-    }
+    queue = new QueueAdapter(this.logger);
+    return queue.pushToQueue(event);
   }
 }

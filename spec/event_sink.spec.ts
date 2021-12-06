@@ -29,6 +29,7 @@ describe('event-sink module', () => {
       body: '{}',
     };
     process.env.AWS_REGION = 'us-east-1';
+    process.env.QUEUE_TYPE = 'SQS';
     process.env.SQS_QUEUE_URL = 'https://sqs.us-east-1.amazonaws.com/1234/test-queue';
     sqsMock.reset();
   });
@@ -52,6 +53,7 @@ describe('event-sink module', () => {
       const response = await main.handler(event);
       expect(response.statusCode).toEqual(400);
       expect(response.statusDescription).toEqual('Bad Request');
+      expect(response.body).toEqual('{"message":"Invalid player event","validEvent":false}');
     }
   });
 
@@ -81,6 +83,7 @@ describe('event-sink module', () => {
     const response = await main.handler(event);
     expect(response.statusCode).toEqual(400);
     expect(response.statusDescription).toEqual('Bad Request');
+    expect(response.body).toEqual('{"message":"Invalid player event","validEvent":false}');
   });
 
   it('can validate an incoming POST request with an empty payload', async () => {
@@ -89,6 +92,7 @@ describe('event-sink module', () => {
     const response = await main.handler(event);
     expect(response.statusCode).toEqual(400);
     expect(response.statusDescription).toEqual('Bad Request');
+    expect(response.body).toEqual('{"message":"Invalid player event","validEvent":false}');
   });
 
   it('should ignore request if "path" != "/" ', async () => {
@@ -101,8 +105,48 @@ describe('event-sink module', () => {
     expect(response.body).toEqual('{}');
   });
 
-  it('should not push to SQS queue if env is not set', async () => {
+  it('should not push to SQS queue if sqs queue env is not set', async () => {
     process.env.SQS_QUEUE_URL = undefined;
+    const sqsResp = { MessageId: '12345678-4444-5555-6666-111122223333' };
+    const event = request;
+    event.path = '/';
+    event.body = JSON.stringify({
+      event: 'loading',
+      timestamp: 0,
+      playhead: 0,
+      duration: 0,
+    });
+
+    sqsMock.on(SendMessageCommand).resolves(sqsResp);
+    const response = await main.handler(event);
+    expect(response.statusCode).toEqual(200);
+    expect(response.statusDescription).toEqual('OK');
+    expect(sqsMock.calls()).toHaveSize(0);
+    expect(response.body).toEqual('{}');
+  });
+
+  it('should not push to SQS queue if AWS region env is not set', async () => {
+    process.env.AWS_REGION = undefined;
+    const sqsResp = { MessageId: '12345678-4444-5555-6666-111122223333' };
+    const event = request;
+    event.path = '/';
+    event.body = JSON.stringify({
+      event: 'loading',
+      timestamp: 0,
+      playhead: 0,
+      duration: 0,
+    });
+
+    sqsMock.on(SendMessageCommand).resolves(sqsResp);
+    const response = await main.handler(event);
+    expect(response.statusCode).toEqual(200);
+    expect(response.statusDescription).toEqual('OK');
+    expect(sqsMock.calls()).toHaveSize(0);
+    expect(response.body).toEqual('{}');
+  });
+
+  it('should not push to queue if queue env is not set', async () => {
+    process.env.QUEUE_TYPE = undefined;
     const sqsResp = { MessageId: '12345678-4444-5555-6666-111122223333' };
     const event = request;
     event.path = '/';

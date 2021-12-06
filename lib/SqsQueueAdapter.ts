@@ -8,14 +8,22 @@ import winston from 'winston';
 
 export default class SqsQueueAdapter implements AbstractQueueAdapter {
   logger: winston.Logger;
-  Client: SQSClient;
+  client: SQSClient;
 
   constructor(logger: winston.Logger) {
-    this.Client = new SQSClient({ region: process.env.AWS_REGION });
+    this.client = new SQSClient({ region: process.env.AWS_REGION });
     this.logger = logger;
   }
 
   async pushToQueue(event: Object): Promise<any> {
+    if (process.env.SQS_QUEUE_URL === 'undefined') {
+      this.logger.error('SQS_QUEUE_URL is undefined');
+      return {};
+    }
+    if (process.env.AWS_REGION === 'undefined') {
+      this.logger.error('AWS_REGION is undefined');
+      return {};
+    }
     const params: SendMessageCommandInput = {
       MessageAttributes: {
         Event: {
@@ -34,7 +42,7 @@ export default class SqsQueueAdapter implements AbstractQueueAdapter {
     };
     const sendMessageCommand = new SendMessageCommand(params);
     try {
-      const sendMessageResult = await this.Client.send(sendMessageCommand);
+      const sendMessageResult = await this.client.send(sendMessageCommand);
       this.logger.info(`Response from SQS: ${JSON.stringify(sendMessageResult)}`);
       return sendMessageResult;
     } catch (err) {
