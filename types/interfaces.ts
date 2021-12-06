@@ -7,9 +7,9 @@ export interface EventValidator {
   validateEventList(eventList: Array<Object>): any;
 }
 
-export abstract class EventSender {
+export interface EventSender {
   logger: winston.Logger;
-  abstract send(event: any, isArray: boolean): Promise<{}>;
+  send(event: any, isArray: boolean): Promise<{}>;
 }
 
 export abstract class AbstractQueueAdapter {

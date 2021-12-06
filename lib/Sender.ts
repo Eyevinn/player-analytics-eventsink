@@ -15,7 +15,7 @@ export default class Sender implements EventSender {
    * @returns an object with the response from the event sender
    */
   async send(event: any): Promise<{}> {
-    await this.getSender();
+    await this.getQueueAdapter();
     if (this.sender) {
       return this.sender.pushToQueue(event);
     } else {
@@ -23,7 +23,7 @@ export default class Sender implements EventSender {
     }
   }
 
-  private async getSender() {
+  private async getQueueAdapter() {
     let QueueAdapter: any;
     if (process.env.SQS_QUEUE_URL !== 'undefined') {
       QueueAdapter = (await import('./SqsQueueAdapter')).default;
