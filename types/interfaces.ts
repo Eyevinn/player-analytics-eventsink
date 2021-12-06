@@ -12,7 +12,7 @@ export abstract class EventSender {
   abstract send(event: any, isArray: boolean): Promise<{}>;
 }
 
-export abstract class QueueEvent {
+export abstract class AbstractQueueAdapter {
   logger: winston.Logger;
   Client: any;
   abstract pushToQueue(body: Object): Promise<{}>;

@@ -39,7 +39,6 @@ describe('event-sink module', () => {
     for (const payload of valid_events) {
       event.body = JSON.stringify(payload);
       sqsMock.on(SendMessageCommand).resolves(sqsResp);
-
       const response = await main.handler(event);
       expect(response.statusCode).toEqual(200);
       expect(response.body).toEqual(JSON.stringify(sqsResp));
@@ -99,6 +98,7 @@ describe('event-sink module', () => {
     const response = await main.handler(event);
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
+    expect(response.body).toEqual('{}');
   });
 
   it('should not push to SQS queue if env is not set', async () => {

@@ -3,10 +3,10 @@ import {
   SendMessageCommand,
   SendMessageCommandInput,
 } from '@aws-sdk/client-sqs';
-import { QueueEvent } from '../types/interfaces';
+import { AbstractQueueAdapter } from '../types/interfaces';
 import winston from 'winston';
 
-export default class SQSEvent implements QueueEvent {
+export default class SqsQueueAdapter implements AbstractQueueAdapter {
   logger: winston.Logger;
   Client: SQSClient;
 

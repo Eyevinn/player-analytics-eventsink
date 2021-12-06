@@ -24,12 +24,12 @@ export default class Sender implements EventSender {
   }
 
   private async getSender() {
-    let EventSender: any;
+    let QueueAdapter: any;
     if (process.env.SQS_QUEUE_URL !== 'undefined') {
-      EventSender = (await import('./SQSSender')).default;
+      QueueAdapter = (await import('./SqsQueueAdapter')).default;
     }
-    if (EventSender) {
-      this.sender = new EventSender(this.logger);
+    if (QueueAdapter) {
+      this.sender = new QueueAdapter(this.logger);
     } else {
       this.logger.warn('No event sender found');
       this.sender = null;
