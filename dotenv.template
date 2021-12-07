@@ -1,2 +1,3 @@
 AWS_REGION = <your-aws-region>
 SQS_QUEUE_URL = <your-sqs-queue-url>
+QUEUE_TYPE = <SQS>

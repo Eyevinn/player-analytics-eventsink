@@ -2,7 +2,7 @@
   "name": "player-analytics-eventsink",
   "version": "0.0.1",
   "description": "",
-  "main": "index.ts",
+  "main": "services/lambda.ts",
   "scripts": {
     "test": "ts-node node_modules/jasmine/bin/jasmine",
     "build": "tsc -p tsconfig-build.json"
@@ -29,8 +29,9 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@types/node": "^16.6.1",
     "@aws-sdk/client-sqs": "^3.42.0",
+    "@types/aws-lambda": "^8.10.86",
+    "@types/node": "^16.6.1",
     "ajv": "^8.8.2",
     "winston": "^3.3.3"
   }
