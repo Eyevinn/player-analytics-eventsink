@@ -1,7 +1,7 @@
-import { Validator } from './lib/JSONValidator';
+import { Validator } from '../lib/JSONValidator';
 import { ALBResult, ALBEvent } from 'aws-lambda';
-import Sender from './lib/Sender';
-import Logger from './logging/logger';
+import Sender from '../lib/Sender';
+import Logger from '../logging/logger';
 
 export const handler = async (event: ALBEvent): Promise<ALBResult> => {
   const validator = new Validator(Logger);
@@ -21,7 +21,10 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
       response.statusDescription = 'OK';
       let sender = new Sender(Logger);
       const resp = await sender.send(validEvent);
-      response.body = JSON.stringify(resp);
+      response.body = JSON.stringify({
+        validEvent: true,
+        SQS: resp
+      });
     } else {
       response.statusCode = 400;
       response.statusDescription = 'Bad Request';

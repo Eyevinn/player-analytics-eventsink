@@ -22,7 +22,7 @@ export default class Sender {
         break;
       default:
         this.logger.warn('No queue type specified');
-        return {};
+        return { message: 'No queue type specified' };
     }
     queue = new QueueAdapter(this.logger);
     return queue.pushToQueue(event);

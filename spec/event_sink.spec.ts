@@ -1,4 +1,4 @@
-import * as main from '../index';
+import * as main from '../services/lambda';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 import { mockClient } from 'aws-sdk-client-mock';
 import { valid_events, invalid_events } from './events/test_events';
@@ -42,7 +42,7 @@ describe('event-sink module', () => {
       sqsMock.on(SendMessageCommand).resolves(sqsResp);
       const response = await main.handler(event);
       expect(response.statusCode).toEqual(200);
-      expect(response.body).toEqual(JSON.stringify(sqsResp));
+      expect(response.body).toEqual(JSON.stringify({ validEvent: true, SQS: sqsResp }));
     }
   });
 
@@ -122,7 +122,7 @@ describe('event-sink module', () => {
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
     expect(sqsMock.calls()).toHaveSize(0);
-    expect(response.body).toEqual('{}');
+    expect(response.body).toEqual('{"validEvent":true,"SQS":{"message":"SQS_QUEUE_URL is undefined"}}');
   });
 
   it('should not push to SQS queue if AWS region env is not set', async () => {
@@ -142,7 +142,7 @@ describe('event-sink module', () => {
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
     expect(sqsMock.calls()).toHaveSize(0);
-    expect(response.body).toEqual('{}');
+    expect(response.body).toEqual('{"validEvent":true,"SQS":{"message":"AWS_REGION is undefined"}}');
   });
 
   it('should not push to queue if queue env is not set', async () => {
@@ -162,6 +162,6 @@ describe('event-sink module', () => {
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
     expect(sqsMock.calls()).toHaveSize(0);
-    expect(response.body).toEqual('{}');
+    expect(response.body).toEqual('{"validEvent":true,"SQS":{"message":"No queue type specified"}}');
   });
 });

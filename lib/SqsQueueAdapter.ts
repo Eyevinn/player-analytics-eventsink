@@ -18,11 +18,11 @@ export default class SqsQueueAdapter implements AbstractQueueAdapter {
   async pushToQueue(event: Object): Promise<any> {
     if (process.env.SQS_QUEUE_URL === 'undefined') {
       this.logger.error('SQS_QUEUE_URL is undefined');
-      return {};
+      return { message: 'SQS_QUEUE_URL is undefined' };
     }
     if (process.env.AWS_REGION === 'undefined') {
       this.logger.error('AWS_REGION is undefined');
-      return {};
+      return { message: 'AWS_REGION is undefined' };
     }
     const params: SendMessageCommandInput = {
       MessageAttributes: {
