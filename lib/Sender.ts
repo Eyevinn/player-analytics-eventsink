@@ -1,7 +1,6 @@
 import winston from 'winston';
-import { EventSender } from '../types/interfaces';
 
-export default class Sender implements EventSender {
+export default class Sender {
   logger: winston.Logger;
 
   constructor(logger: winston.Logger) {

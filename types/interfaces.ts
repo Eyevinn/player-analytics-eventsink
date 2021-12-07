@@ -7,11 +7,6 @@ export interface EventValidator {
   validateEventList(eventList: Array<Object>): any;
 }
 
-export interface EventSender {
-  logger: winston.Logger;
-  send(event: Object): Promise<Object>;
-}
-
 export abstract class AbstractQueueAdapter {
   logger: winston.Logger;
   client: any;
