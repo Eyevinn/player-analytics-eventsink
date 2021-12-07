@@ -11,7 +11,7 @@ export default class Sender implements EventSender {
   /**
    *
    * @param event the event object to send
-   * @returns an object with the response from the event sender
+   * @returns an object with the response from the event sender or an empty object if there was an error
    */
   async send(event: Object): Promise<Object> {
     let QueueAdapter: any;

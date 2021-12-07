@@ -1,7 +1,7 @@
 import * as main from '../index';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 import { mockClient } from 'aws-sdk-client-mock';
-import { valid_events, invalid_events } from './events/events';
+import { valid_events, invalid_events } from './events/test_events';
 
 const sqsMock = mockClient(SQSClient);
 let request: any;
