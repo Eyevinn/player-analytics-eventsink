@@ -1,6 +1,6 @@
 import winston from 'winston';
 
-export class Sender {
+export default class Sender {
   logger: winston.Logger;
 
   constructor(logger: winston.Logger) {
@@ -18,7 +18,7 @@ export class Sender {
 
     switch (process.env.QUEUE_TYPE) {
       case 'SQS':
-        QueueAdapter = (await import('player-analytics-shared/adapters/SqsQueueAdapter')).default;
+        QueueAdapter = (await import('player-analytics-shared/adapters/SqsQueueAdapter')).SqsQueueAdapter;
         break;
       default:
         this.logger.warn('No queue type specified');
