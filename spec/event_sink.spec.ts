@@ -2,6 +2,8 @@ import * as main from '../services/lambda';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 import { mockClient } from 'aws-sdk-client-mock';
 import { valid_events, invalid_events } from './events/test_events';
+import { SqsQueueAdapter } from 'player-analytics-shared/adapters/SqsQueueAdapter';
+import { Sender } from '../lib/Sender';
 
 const sqsMock = mockClient(SQSClient);
 let request: any;
@@ -34,7 +36,11 @@ describe('event-sink module', () => {
     sqsMock.reset();
   });
 
-  it('can validate an incoming POST request with a valid payload and push it to SQS', async () => {
+  fit('can validate an incoming POST request with a valid payload and push it to SQS', async () => {
+
+    const pushToQueueSpy = jasmine.createSpy('pushToQueueSpy');
+    //spyOnProperty(SqsQueueAdapter, 'pushToQueue').and.returnValue({"validEvent":true,"SQS":{"MessageId":"12345678-4444-5555-6666-111122223333"}});
+    spyOn(Sender, 'send').and.returnValue(Promise.resolve({"validEvent":true,"SQS":{"MessageId":"12345678-4444-5555-6666-111122223333"}}));
     const sqsResp = { MessageId: '12345678-4444-5555-6666-111122223333' };
     const event = request;
     for (const payload of valid_events) {

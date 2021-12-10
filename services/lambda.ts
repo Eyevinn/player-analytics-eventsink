@@ -33,7 +33,6 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
         validEvent: validEvent,
       });
     }
-    return response;
   }
   return response;
 };
