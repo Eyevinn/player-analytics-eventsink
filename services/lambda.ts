@@ -1,6 +1,6 @@
-import { Validator } from '../lib/JSONValidator';
+import { Validator } from '../lib/jsonvalidator';
 import { ALBResult, ALBEvent } from 'aws-lambda';
-import Sender from '../lib/Sender';
+import Sender from '../lib/sender';
 import Logger from '../logging/logger';
 
 export const handler = async (event: ALBEvent): Promise<ALBResult> => {
@@ -22,7 +22,7 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
       let sender = new Sender(Logger);
       const resp = await sender.send(validEvent);
       response.body = JSON.stringify({
-        validEvent: true,
+        validEvent: validEvent,
         SQS: resp
       });
     } else {

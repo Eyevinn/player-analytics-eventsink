@@ -2,8 +2,7 @@ import * as main from "../services/lambda";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { mockClient } from "aws-sdk-client-mock";
 import { valid_events, invalid_events } from "./events/test_events";
-import { SqsQueueAdapter } from "../../player-analytics-shared/adapters/SqsQueueAdapter";
-import Sender from "../lib/Sender";
+import { SqsQueueAdapter } from "player-analytics-shared";
 
 const sqsMock = mockClient(SQSClient);
 let request: any;
@@ -32,8 +31,7 @@ describe("event-sink module", () => {
     };
     process.env.AWS_REGION = "us-east-1";
     process.env.QUEUE_TYPE = "SQS";
-    process.env.SQS_QUEUE_URL =
-      "https://sqs.us-east-1.amazonaws.com/1234/test-queue";
+    process.env.SQS_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/1234/test-queue";
     sqsMock.reset();
   });
 
