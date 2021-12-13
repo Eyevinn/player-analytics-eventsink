@@ -15,5 +15,10 @@ jobs:
       - name: Install dependencies and run tests
         env:
           PUBLISH_PACKAGES: ${{ secrets.PUBLISH_PACKAGES }}
-        run: npm ci
-      - run: npm test
+        run: |
+          rm -rf .npmrc
+          touch .npmrc
+          echo @eyevinn:registry=https://npm.pkg.github.com >> .npmrc
+          echo //npm.pkg.github.com/:_authToken=${PUBLISH_PACKAGES} >> .npmrc
+          npm ci
+          npm test
