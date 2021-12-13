@@ -12,8 +12,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install dependencies and run tests
         run: npm ci
       - run: npm test
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
