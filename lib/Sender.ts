@@ -17,7 +17,7 @@ export default class Sender {
 
     switch (process.env.QUEUE_TYPE) {
       case 'SQS':
-        QueueAdapter = (await import('player-analytics-shared')).SqsQueueAdapter;
+        QueueAdapter = (await import('@eyevinn/player-analytics-shared')).SqsQueueAdapter;
         break;
       default:
         this.logger.warn('No queue type specified');
