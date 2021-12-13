@@ -74,6 +74,9 @@ web_modules/
 .env.test
 .env.production
 
+# npm user config
+.npmrc
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
