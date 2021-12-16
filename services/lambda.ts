@@ -1,6 +1,6 @@
-import { Validator } from '../lib/jsonvalidator';
+import { Validator } from '../lib/Validator';
 import { ALBResult, ALBEvent } from 'aws-lambda';
-import Sender from '../lib/sender';
+import Sender from '../lib/Sender';
 import Logger from '../logging/logger';
 
 export const handler = async (event: ALBEvent): Promise<ALBResult> => {
