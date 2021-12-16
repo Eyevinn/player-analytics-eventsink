@@ -13,16 +13,21 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
   };
 
   if (event.httpMethod === 'POST' && event.path === '/' && event.body) {
+    let requestHost: string = 'unknown';
+    if (event.headers && event.headers['host']) {
+      requestHost = event.headers['host'];
+    }
     const body = JSON.parse(event.body);
     const validEvent = validator.validateEvent(body);
     if (validEvent) {
       response.statusCode = 200;
       response.statusDescription = 'OK';
       let sender = new Sender(Logger);
+      body['host'] = requestHost;
       const resp = await sender.send(body);
       response.body = JSON.stringify({
         validEvent: validEvent,
-        SQS: resp
+        SQS: resp,
       });
     } else {
       response.statusCode = 400;
