@@ -14,8 +14,7 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
 
   if (event.httpMethod === 'POST' && event.path === '/' && event.body) {
     const body = JSON.parse(event.body);
-    let validEvent: boolean;
-    validEvent = validator.validateEvent(body);
+    const validEvent = validator.validateEvent(body);
     if (validEvent) {
       response.statusCode = 200;
       response.statusDescription = 'OK';
