@@ -1,5 +1,5 @@
 import Logger from '../logging/logger';
-import { Validator } from '../lib/JSONValidator';
+import { Validator } from '../lib/Validator';
 import { valid_events, invalid_events } from './events/test_events';
 
 const validator = new Validator(Logger);
