@@ -14,17 +14,16 @@ export default class Sender {
    */
   async send(event: Object): Promise<Object> {
     let QueueAdapter: any;
-    let queue: any;
 
     switch (process.env.QUEUE_TYPE) {
       case 'SQS':
-        QueueAdapter = (await import('./SqsQueueAdapter')).default;
+        QueueAdapter = (await import('@eyevinn/player-analytics-shared')).SqsQueueAdapter;
         break;
       default:
         this.logger.warn('No queue type specified');
         return { message: 'No queue type specified' };
     }
-    queue = new QueueAdapter(this.logger);
+    const queue = new QueueAdapter(this.logger);
     return queue.pushToQueue(event);
   }
 }

@@ -1,4 +1,4 @@
-import { Validator } from '../lib/JSONValidator';
+import { Validator } from '../lib/Validator';
 import { ALBResult, ALBEvent } from 'aws-lambda';
 import Sender from '../lib/Sender';
 import Logger from '../logging/logger';
@@ -14,15 +14,14 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
 
   if (event.httpMethod === 'POST' && event.path === '/' && event.body) {
     const body = JSON.parse(event.body);
-    let validEvent: any;
-    validEvent = validator.validateEvent(body);
+    const validEvent = validator.validateEvent(body);
     if (validEvent) {
       response.statusCode = 200;
       response.statusDescription = 'OK';
       let sender = new Sender(Logger);
-      const resp = await sender.send(validEvent);
+      const resp = await sender.send(body);
       response.body = JSON.stringify({
-        validEvent: true,
+        validEvent: validEvent,
         SQS: resp
       });
     } else {
@@ -33,7 +32,6 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
         validEvent: validEvent,
       });
     }
-    return response;
   }
   return response;
 };
