@@ -31,12 +31,15 @@ const schema = {
       type: 'object',
     },
     bitrateChanged: {
-      required: ['event', 'duration', 'playhead', 'timestamp', 'payload'],
+      required: ['event', 'sessionId', 'duration', 'playhead', 'timestamp', 'payload'],
       additionalProperties: false,
       type: 'object',
       properties: {
         event: {
           enum: ['bitrate_changed'],
+          type: 'string',
+        },
+        sessionId: {
           type: 'string',
         },
         duration: {
@@ -73,12 +76,15 @@ const schema = {
       },
     },
     buffered: {
-      required: ['event', 'duration', 'playhead', 'timestamp'],
+      required: ['event', 'sessionId', 'duration', 'playhead', 'timestamp'],
       additionalProperties: false,
       type: 'object',
       properties: {
         event: {
           enum: ['buffered'],
+          type: 'string',
+        },
+        sessionId: {
           type: 'string',
         },
         duration: {
@@ -93,12 +99,15 @@ const schema = {
       },
     },
     buffering: {
-      required: ['event', 'duration', 'playhead', 'timestamp'],
+      required: ['event', 'sessionId', 'duration', 'playhead', 'timestamp'],
       additionalProperties: false,
       type: 'object',
       properties: {
         event: {
           enum: ['buffering'],
+          type: 'string',
+        },
+        sessionId: {
           type: 'string',
         },
         duration: {
@@ -113,12 +122,15 @@ const schema = {
       },
     },
     error: {
-      required: ['event', 'duration', 'playhead', 'timestamp', 'payload'],
+      required: ['event', 'sessionId', 'duration', 'playhead', 'timestamp', 'payload'],
       additionalProperties: false,
       type: 'object',
       properties: {
         event: {
           enum: ['error'],
+          type: 'string',
+        },
+        sessionId: {
           type: 'string',
         },
         duration: {
@@ -152,7 +164,7 @@ const schema = {
       },
     },
     init: {
-      required: ['event', 'duration', 'playhead', 'timestamp', 'payload'],
+      required: ['event', 'sessionId', 'duration', 'playhead', 'timestamp', 'payload'],
       additionalProperties: false,
       type: 'object',
       properties: {
@@ -209,12 +221,15 @@ const schema = {
       },
     },
     loading: {
-      required: ['duration', 'playhead', 'timestamp', 'event'],
+      required: ['duration', 'playhead', 'timestamp', 'sessionId', 'event'],
       additionalProperties: false,
       type: 'object',
       properties: {
         event: {
           enum: ['loading'],
+          type: 'string',
+        },
+        sessionId: {
           type: 'string',
         },
         duration: {
@@ -229,12 +244,15 @@ const schema = {
       },
     },
     loaded: {
-      required: ['duration', 'playhead', 'timestamp', 'event'],
+      required: ['duration', 'playhead', 'timestamp', 'sessionId', 'event'],
       additionalProperties: false,
       type: 'object',
       properties: {
         event: {
           enum: ['loaded'],
+          type: 'string',
+        },
+        sessionId: {
           type: 'string',
         },
         duration: {
@@ -249,10 +267,17 @@ const schema = {
       },
     },
     play: {
-      required: ['duration', 'playhead', 'timestamp', 'event'],
+      required: ['duration', 'playhead', 'timestamp', 'sessionId', 'event'],
       additionalProperties: false,
       type: 'object',
       properties: {
+        event: {
+          enum: ['play'],
+          type: 'string',
+        },
+        sessionId: {
+          type: 'string',
+        },
         duration: {
           type: 'number',
         },
@@ -262,19 +287,18 @@ const schema = {
         timestamp: {
           type: 'number',
         },
-        event: {
-          enum: ['play'],
-          type: 'string',
-        },
       },
     },
     playing: {
-      required: ['duration', 'playhead', 'timestamp', 'event'],
+      required: ['duration', 'playhead', 'timestamp', 'sessionId', 'event'],
       additionalProperties: false,
       type: 'object',
       properties: {
         event: {
           enum: ['playing'],
+          type: 'string',
+        },
+        sessionId: {
           type: 'string',
         },
         duration: {
@@ -289,12 +313,15 @@ const schema = {
       },
     },
     pause: {
-      required: ['duration', 'playhead', 'timestamp', 'event'],
+      required: ['duration', 'playhead', 'timestamp', 'sessionId', 'event'],
       additionalProperties: false,
       type: 'object',
       properties: {
         event: {
           enum: ['pause'],
+          type: 'string',
+        },
+        sessionId: {
           type: 'string',
         },
         duration: {
@@ -309,12 +336,15 @@ const schema = {
       },
     },
     resume: {
-      required: ['duration', 'playhead', 'timestamp', 'event'],
+      required: ['duration', 'playhead', 'timestamp', 'sessionId', 'event'],
       additionalProperties: false,
       type: 'object',
       properties: {
         event: {
           enum: ['resume'],
+          type: 'string',
+        },
+        sessionId: {
           type: 'string',
         },
         duration: {
@@ -329,12 +359,15 @@ const schema = {
       },
     },
     seeking: {
-      required: ['duration', 'playhead', 'timestamp', 'event'],
+      required: ['duration', 'playhead', 'timestamp', 'sessionId', 'event'],
       additionalProperties: false,
       type: 'object',
       properties: {
         event: {
           enum: ['seeking'],
+          type: 'string',
+        },
+        sessionId: {
           type: 'string',
         },
         duration: {
@@ -349,12 +382,15 @@ const schema = {
       },
     },
     seeked: {
-      required: ['duration', 'playhead', 'timestamp', 'event'],
+      required: ['duration', 'playhead', 'timestamp', 'sessionId', 'event'],
       additionalProperties: false,
       type: 'object',
       properties: {
         event: {
           enum: ['seeked'],
+          type: 'string',
+        },
+        sessionId: {
           type: 'string',
         },
         duration: {
@@ -369,12 +405,15 @@ const schema = {
       },
     },
     warning: {
-      required: ['event', 'duration', 'playhead', 'timestamp', 'payload'],
+      required: ['event', 'duration', 'playhead', 'timestamp', 'sessionId', 'payload'],
       additionalProperties: false,
       type: 'object',
       properties: {
         event: {
           enum: ['warning'],
+          type: 'string',
+        },
+        sessionId: {
           type: 'string',
         },
         duration: {
@@ -433,31 +472,9 @@ const schema = {
             reason: {
               type: 'string',
             },
-            events: {
-              type: 'array',
-              items: {
-                anyOf: [
-                  { $ref: '#/definitions/init' },
-                  { $ref: '#/definitions/bitrateChanged' },
-                  { $ref: '#/definitions/buffered' },
-                  { $ref: '#/definitions/buffering' },
-                  { $ref: '#/definitions/error' },
-                  { $ref: '#/definitions/heartbeat' },
-                  { $ref: '#/definitions/loaded' },
-                  { $ref: '#/definitions/loading' },
-                  { $ref: '#/definitions/pause' },
-                  { $ref: '#/definitions/play' },
-                  { $ref: '#/definitions/playing' },
-                  { $ref: '#/definitions/resume' },
-                  { $ref: '#/definitions/seeked' },
-                  { $ref: '#/definitions/seeking' },
-                  { $ref: '#/definitions/stopped' },
-                  { $ref: '#/definitions/warning' },
-                ],
-              },
-            },
           },
           type: 'object',
+          additionalProperties: false,
         },
       },
     },
@@ -483,33 +500,8 @@ const schema = {
           type: 'number',
         },
         payload: {
-          properties: {
-            events: {
-              type: 'array',
-              items: {
-                anyOf: [
-                  { $ref: '#/definitions/init' },
-                  { $ref: '#/definitions/bitrateChanged' },
-                  { $ref: '#/definitions/buffered' },
-                  { $ref: '#/definitions/buffering' },
-                  { $ref: '#/definitions/error' },
-                  { $ref: '#/definitions/heartbeat' },
-                  { $ref: '#/definitions/loaded' },
-                  { $ref: '#/definitions/loading' },
-                  { $ref: '#/definitions/pause' },
-                  { $ref: '#/definitions/play' },
-                  { $ref: '#/definitions/playing' },
-                  { $ref: '#/definitions/resume' },
-                  { $ref: '#/definitions/seeked' },
-                  { $ref: '#/definitions/seeking' },
-                  { $ref: '#/definitions/stopped' },
-                  { $ref: '#/definitions/warning' },
-                ],
-              },
-            },
-          },
           type: 'object',
-          additionalProperties: false,
+          additionalProperties: true,
         },
       },
     },

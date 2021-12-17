@@ -1,10 +1,10 @@
 const valid_events = [
   {
     event: 'init',
-    sessionId: '', // if not provided the server MUST generate it
-    heartbeatInterval: 30, // if not provided the server MUST generate it
+    sessionId: '123-214-234',
+    heartbeatInterval: 30,
     timestamp: -1,
-    playhead: -1, // if the player has an expected startTime, eg. if user continues watches a movie, use that value here.
+    playhead: -1,
     duration: -1,
     payload: {
       live: false,
@@ -19,7 +19,7 @@ const valid_events = [
   },
   {
     event: 'heartbeat',
-    sessionId: '',
+    sessionId: '123-214-234',
     timestamp: 0,
     playhead: 0,
     duration: 0,
@@ -42,69 +42,79 @@ const valid_events = [
   },
   {
     event: 'loading',
+    sessionId: '123-214-234',
     timestamp: 0,
     playhead: 0,
     duration: 0,
   },
   {
     event: 'loaded',
+    sessionId: '123-214-234',
     timestamp: 0,
     playhead: 0,
     duration: 0,
   },
   {
     event: 'play',
+    sessionId: '123-214-234',
     timestamp: 0,
     playhead: 0,
     duration: 0,
   },
   {
     event: 'pause',
+    sessionId: '123-214-234',
     timestamp: 0,
     playhead: 0,
     duration: 0,
   },
   {
     event: 'resume',
+    sessionId: '123-214-234',
     timestamp: 0,
     playhead: 0,
     duration: 0,
   },
   {
     event: 'buffering',
+    sessionId: '123-214-234',
     timestamp: 0,
     playhead: 0,
     duration: 0,
   },
   {
     event: 'buffered',
+    sessionId: '123-214-234',
     timestamp: 0,
     playhead: 0,
     duration: 0,
   },
   {
     event: 'seeking',
+    sessionId: '123-214-234',
     timestamp: 0,
     playhead: 0,
     duration: 0,
   },
   {
     event: 'seeked',
+    sessionId: '123-214-234',
     timestamp: 0,
     playhead: 0,
     duration: 0,
   },
   {
     event: 'bitrate_changed',
+    sessionId: '123-214-234',
     timestamp: 0,
     playhead: 0,
     duration: 0,
     payload: {
-      bitrate: 300, // bitrate in Kbps
-      width: 1920, // video width in pixels
-      height: 1080, // video height in pixels
-      videoBitrate: 300, // if available provide the bitrate for the video track
-      audioBitrate: 300, // if available provide the bitrate for the audio track
+      bitrate: 300,
+      width: 1920,
+      height: 1080,
+      videoBitrate: 300,
+      audioBitrate: 300,
     },
   },
   {
@@ -115,24 +125,11 @@ const valid_events = [
     duration: 0,
     payload: {
       reason: 'ended', // eg. "ended", "aborted", "error"
-      events: [
-        {
-          event: 'seeked',
-          timestamp: 0,
-          playhead: 0,
-          duration: 0,
-        },
-        {
-          event: 'seeking',
-          timestamp: 0,
-          playhead: 0,
-          duration: 0,
-        },
-      ],
     },
   },
   {
     event: 'error',
+    sessionId: '123-214-234',
     timestamp: 0,
     playhead: 0,
     duration: 0,
@@ -145,6 +142,7 @@ const valid_events = [
   },
   {
     event: 'warning',
+    sessionId: '123-214-234',
     timestamp: 0,
     playhead: 0,
     duration: 0,
