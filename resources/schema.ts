@@ -1,7 +1,7 @@
 const schema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'epas',
-  title: 'Player Analytics Specification',
+  title: 'Eyevinn Player Analytics Specification',
   type: 'object',
   patternProperties: {
     '^.*$': {
@@ -14,10 +14,8 @@ const schema = {
         { $ref: '#/definitions/heartbeat' },
         { $ref: '#/definitions/loaded' },
         { $ref: '#/definitions/loading' },
-        { $ref: '#/definitions/pause' },
-        { $ref: '#/definitions/play' },
+        { $ref: '#/definitions/paused' },
         { $ref: '#/definitions/playing' },
-        { $ref: '#/definitions/resume' },
         { $ref: '#/definitions/seeked' },
         { $ref: '#/definitions/seeking' },
         { $ref: '#/definitions/stopped' },
@@ -54,19 +52,19 @@ const schema = {
         payload: {
           properties: {
             audioBitrate: {
-              type: 'number',
+              type: 'string',
             },
             bitrate: {
-              type: 'number',
+              type: 'string',
             },
             height: {
-              type: 'number',
+              type: 'string',
             },
             videoBitrate: {
-              type: 'number',
+              type: 'string',
             },
             width: {
-              type: 'number',
+              type: 'string',
             },
           },
           required: ['bitrate'],
@@ -266,29 +264,6 @@ const schema = {
         },
       },
     },
-    play: {
-      required: ['duration', 'playhead', 'timestamp', 'sessionId', 'event'],
-      additionalProperties: false,
-      type: 'object',
-      properties: {
-        event: {
-          enum: ['play'],
-          type: 'string',
-        },
-        sessionId: {
-          type: 'string',
-        },
-        duration: {
-          type: 'number',
-        },
-        playhead: {
-          type: 'number',
-        },
-        timestamp: {
-          type: 'number',
-        },
-      },
-    },
     playing: {
       required: ['duration', 'playhead', 'timestamp', 'sessionId', 'event'],
       additionalProperties: false,
@@ -312,36 +287,13 @@ const schema = {
         },
       },
     },
-    pause: {
+    paused: {
       required: ['duration', 'playhead', 'timestamp', 'sessionId', 'event'],
       additionalProperties: false,
       type: 'object',
       properties: {
         event: {
-          enum: ['pause'],
-          type: 'string',
-        },
-        sessionId: {
-          type: 'string',
-        },
-        duration: {
-          type: 'number',
-        },
-        playhead: {
-          type: 'number',
-        },
-        timestamp: {
-          type: 'number',
-        },
-      },
-    },
-    resume: {
-      required: ['duration', 'playhead', 'timestamp', 'sessionId', 'event'],
-      additionalProperties: false,
-      type: 'object',
-      properties: {
-        event: {
-          enum: ['resume'],
+          enum: ['paused'],
           type: 'string',
         },
         sessionId: {

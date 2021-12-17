@@ -72,44 +72,6 @@ describe("event-sink module", () => {
     }
   });
 
-  xit("can validate an incoming POST request with an invalid payload with multiple events", async () => {
-    spyOn(SqsQueueAdapter.prototype, "pushToQueue").and.callFake(function () {
-      return Promise.resolve({
-        message: "Invalid player event",
-      });
-    });
-    const event = request;
-    event.body = JSON.stringify({
-      event: "heartbeat",
-      sessionId: "",
-      timestamp: 0,
-      playhead: 0,
-      duration: 0,
-      payload: {
-        events: [
-          {
-            // valid event
-            event: "loading",
-            timestamp: 0,
-            playhead: 0,
-            duration: 0,
-          },
-          {
-            // invalid event
-            event: "loaded",
-            timestamp: 0,
-          },
-        ],
-      },
-    });
-    const response = await main.handler(event);
-    expect(response.statusCode).toEqual(400);
-    expect(response.statusDescription).toEqual("Bad Request");
-    expect(response.body).toEqual(
-      '{"message":"Invalid player event","validEvent":false}'
-    );
-  });
-
   it("can validate an incoming POST request with an empty payload", async () => {
     spyOn(SqsQueueAdapter.prototype, "pushToQueue").and.callFake(function () {
       return Promise.resolve({

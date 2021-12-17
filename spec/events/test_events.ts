@@ -55,21 +55,14 @@ const valid_events = [
     duration: 0,
   },
   {
-    event: 'play',
+    event: 'playing',
     sessionId: '123-214-234',
     timestamp: 0,
     playhead: 0,
     duration: 0,
   },
   {
-    event: 'pause',
-    sessionId: '123-214-234',
-    timestamp: 0,
-    playhead: 0,
-    duration: 0,
-  },
-  {
-    event: 'resume',
+    event: 'paused',
     sessionId: '123-214-234',
     timestamp: 0,
     playhead: 0,
@@ -110,11 +103,11 @@ const valid_events = [
     playhead: 0,
     duration: 0,
     payload: {
-      bitrate: 300,
-      width: 1920,
-      height: 1080,
-      videoBitrate: 300,
-      audioBitrate: 300,
+      bitrate: "300",
+      width: "1920",
+      height: "1080",
+      videoBitrate: "300",
+      audioBitrate: "300",
     },
   },
   {
@@ -202,7 +195,7 @@ const invalid_events = [
     duration: 0,
   },
   {
-    event: 'play',
+    event: 'playing',
     timestamp: 0,
   },
   {
