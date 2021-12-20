@@ -8,7 +8,11 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
   let response: ALBResult = {
     statusCode: 200,
     statusDescription: 'OK',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Content-Type, Origin',
+    },
     body: '{}',
   };
 
