@@ -46,6 +46,10 @@ export class Validator implements EventValidator {
     return event;
   }
 
+  /**
+   * Method that returns a valid response
+   * @param optional event object
+   */
   validResponse(event?: Object): Object {
     let body: Object;
     let response = {
@@ -73,6 +77,10 @@ export class Validator implements EventValidator {
     return response;
   }
 
+  /**
+   * Method that returns an invalid response
+   * @param optional event object
+   */
   invalidResponse(event?: Object): Object {
     let response = {
       statusCode: 400,
