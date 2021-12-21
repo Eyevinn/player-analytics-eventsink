@@ -5,7 +5,7 @@ import Logger from '../logging/logger';
 
 export const handler = async (event: ALBEvent): Promise<ALBResult> => {
   const validator = new Validator(Logger);
-  if (event.httpMethod === 'POST' && event.path === '/' && event.body) {
+  if (event.httpMethod === 'POST' && event.path === '/' && event['body']) {
     let requestHost: string = 'unknown';
     if (event.headers && event.headers['host']) {
       requestHost = event.headers['host'];
