@@ -8,14 +8,14 @@ describe('JSONValidator', () => {
   it('should return true if valid events are provided', async () => {
     for (const event of valid_events) {
       const resp = validator.validateEvent(event);
-      expect(resp).toBe(true);
+      expect(resp['body']['valid']).toBe(true);
     }
   });
 
   it('should return false if invalid events are provided', async () => {
     for (const event of invalid_events) {
       const resp = validator.validateEvent(event);
-      expect(resp).toBe(false);
+      expect(resp['body']['valid']).toBe(false);
     }
   });
 });
