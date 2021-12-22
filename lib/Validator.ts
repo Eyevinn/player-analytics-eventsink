@@ -28,9 +28,7 @@ export class Validator implements EventValidator {
     const validator = new Ajv();
     const validate = validator.compile(this.eventSchema);
     const valid = validate({ event });
-    this.logger.info(
-      `Event: \n ${JSON.stringify(event)} is ${valid ? 'valid' : 'invalid'}`
-    );
+    this.logger.info(`Event: \n ${JSON.stringify(event)} is ${valid ? 'valid' : 'invalid'}`);
     if (valid) {
       return this.validResponse(event);
     } else {
@@ -42,7 +40,9 @@ export class Validator implements EventValidator {
     if (!event['sessionId']) {
       event['sessionId'] = uuidv4();
     }
-    event['heartbeatInterval'] = process.env.HEARTBEAT_INTERVAL || 5000;
+    if (!event['heartbeatInterval']) {
+      event['heartbeatInterval'] = process.env.HEARTBEAT_INTERVAL || 5000;
+    }
     return event;
   }
 
