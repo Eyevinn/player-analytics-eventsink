@@ -2,7 +2,7 @@ const valid_events = [
   {
     event: 'init',
     sessionId: '123-214-234',
-    heartbeatInterval: 30,
+    heartbeatInterval: 5000,
     timestamp: -1,
     playhead: -1,
     duration: -1,
@@ -27,12 +27,14 @@ const valid_events = [
       events: [
         {
           event: 'loading',
+          sessionId: '123-214-234',
           timestamp: 0,
           playhead: 0,
           duration: 0,
         },
         {
           event: 'loaded',
+          sessionId: '123-214-234',
           timestamp: 0,
           playhead: 0,
           duration: 0,
@@ -151,6 +153,7 @@ const valid_events = [
 const invalid_events = [
   {
     event: 'init',
+    sessionId: '123-214-234',
     payload: {
       live: false,
       contentId: '',
@@ -164,19 +167,21 @@ const invalid_events = [
   },
   {
     event: 'heartbeat',
+    sessionId: '123-214-234',
     timestamp: 0,
-    playhead: 0,
     duration: 0,
     payload: {
       events: [
         {
           event: 'loading',
+          sessionId: '123-214-234',
           timestamp: 0,
           playhead: 0,
           duration: 0,
         },
         {
           event: 'loaded',
+          sessionId: '123-214-234',
           timestamp: 0,
           playhead: 0,
           duration: 0,
@@ -186,48 +191,58 @@ const invalid_events = [
   },
   {
     event: 'loading',
+    sessionId: '123-214-234',
     timestamp: 0,
     duration: 0,
   },
   {
     event: 'loaded',
+    sessionId: '123-214-234',
     playhead: 0,
     duration: 0,
   },
   {
     event: 'playing',
+    sessionId: '123-214-234',
     timestamp: 0,
   },
   {
     event: 'pause',
+    sessionId: '123-214-234',
     playhead: 0,
     duration: 0,
   },
   {
     event: 'resume',
+    sessionId: '123-214-234',
     timestamp: 0,
     duration: 0,
   },
   {
     event: 'buffering',
+    sessionId: '123-214-234',
     playhead: 0,
     duration: 0,
   },
   {
     event: 'buffered',
+    sessionId: '123-214-234',
     timestamp: 0,
     playhead: 0,
   },
   {
     event: 'seeking',
+    sessionId: '123-214-234',
     playhead: 0,
     duration: 0,
   },
   {
     event: 'seeked',
+    sessionId: '123-214-234',
   },
   {
     event: 'bitrate_changed',
+    sessionId: '123-214-234',
     timestamp: 0,
     duration: 0,
     payload: {},
@@ -241,9 +256,11 @@ const invalid_events = [
   },
   {
     event: 'error',
+    sessionId: '123-214-234',
   },
   {
     event: 'warning',
+    sessionId: '123-214-234',
     timestamp: '',
     playhead: 0,
     duration: 0,

@@ -5,7 +5,7 @@ const schema = {
   type: 'object',
   patternProperties: {
     '^.*$': {
-      anyOf: [
+      oneOf: [
         { $ref: '#/definitions/init' },
         { $ref: '#/definitions/bitrateChanged' },
         { $ref: '#/definitions/buffered' },
