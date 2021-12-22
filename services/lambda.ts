@@ -21,6 +21,8 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
     validatorResp['body'] = JSON.stringify(validatorResp['body']);
     return validatorResp as ALBResult;
   } else {
-    return validator.validResponse() as ALBResult;
+    const resp = validator.validResponse();
+    resp.body = '{}';
+    return resp as ALBResult;
   }
 };

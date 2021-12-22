@@ -1,4 +1,4 @@
-import { EventValidator } from '../types/interfaces';
+import { EventValidator, validatorResponse } from '../types/interfaces';
 import { schema } from '../resources/schema';
 import { v4 as uuidv4 } from 'uuid';
 import winston from 'winston';
@@ -50,7 +50,7 @@ export class Validator implements EventValidator {
    * Method that returns a valid response
    * @param optional event object
    */
-  validResponse(event?: Object): Object {
+  validResponse(event?: Object): validatorResponse {
     let body: Object;
     let response = {
       statusCode: 200,
@@ -63,7 +63,6 @@ export class Validator implements EventValidator {
       body: {},
     };
     if (!event) {
-      response.body = '{}';
       return response;
     }
     body = {
@@ -81,7 +80,7 @@ export class Validator implements EventValidator {
    * Method that returns an invalid response
    * @param optional event object
    */
-  invalidResponse(event?: Object): Object {
+  invalidResponse(event?: Object): validatorResponse {
     let response = {
       statusCode: 400,
       statusDescription: 'Bad Request',
@@ -93,7 +92,6 @@ export class Validator implements EventValidator {
       body: {},
     };
     if (!event) {
-      response.body = '{}';
       return response;
     }
     response.body = {
