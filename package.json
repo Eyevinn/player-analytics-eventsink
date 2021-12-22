@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.42.0",
-    "@eyevinn/player-analytics-shared": "^0.2.3",
+    "@eyevinn/player-analytics-shared": "^0.2.5",
     "@types/aws-lambda": "^8.10.86",
     "@types/node": "^16.6.1",
     "ajv": "^8.8.2",
