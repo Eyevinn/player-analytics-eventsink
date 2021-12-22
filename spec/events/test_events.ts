@@ -2,7 +2,7 @@ const valid_events = [
   {
     event: 'init',
     sessionId: '123-214-234',
-    heartbeatInterval: 30,
+    heartbeatInterval: 5000,
     timestamp: -1,
     playhead: -1,
     duration: -1,
