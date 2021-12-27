@@ -54,13 +54,14 @@ describe('event-sink module', () => {
         resp = {
           sessionId: '123-214-234',
           valid: true,
-          heartbeatInterval: 5000,
-          QueueResp: sqsResp,
+          heartbeatInterval: 5000
         };
       } else {
         resp = { sessionId: '123-214-234', valid: true, QueueResp: sqsResp };
       }
-      expect(response.body).toEqual(JSON.stringify(resp));
+      expect(response.body).toContain('"sessionId":"123-214-234"');
+      expect(response.body).toContain('"valid":true');
+      expect(response.body).toContain('"MessageId":"12345678-4444-5555-6666-111122223333"');
     }
   });
 
@@ -77,7 +78,7 @@ describe('event-sink module', () => {
       expect(response.statusCode).toEqual(400);
       expect(response.statusDescription).toEqual('Bad Request');
       expect(response.body).toEqual(
-        '{"sessionId":"123-214-234","Message":"Invalid player event","valid":false}'
+        '{"sessionId":"123-214-234","message":"Invalid player event","valid":false}'
       );
     }
   });
@@ -94,18 +95,18 @@ describe('event-sink module', () => {
     expect(response.statusCode).toEqual(400);
     expect(response.statusDescription).toEqual('Bad Request');
     expect(response.body).toEqual(
-      '{"Message":"Invalid player event","valid":false}'
+      '{"sessionId":-1,"message":"Invalid player event","valid":false}'
     );
   });
 
-  it('should ignore request if "path" != "/" ', async () => {
+  it('should dismiss request if "path" != "/" ', async () => {
     const event = request;
     event.path = '/validate';
     event.body = JSON.stringify({ event: 'live-event' });
     const response = await main.handler(event);
-    expect(response.statusCode).toEqual(200);
-    expect(response.statusDescription).toEqual('OK');
-    expect(response.body).toEqual('{}');
+    expect(response.statusCode).toEqual(404);
+    expect(response.statusDescription).toEqual('Not Found');
+    expect(response.body).toContain("Invalid");
   });
 
   it('should not push to SQS queue if sqs queue env is not set', async () => {
@@ -126,8 +127,8 @@ describe('event-sink module', () => {
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
     expect(sqsMock.calls()).toHaveSize(0);
-    expect(response.body).toEqual(
-      '{"sessionId":"123-214-234","valid":true,"heartbeatInterval":5000,"QueueResp":{"message":"SQS_QUEUE_URL is undefined"}}'
+    expect(response.body).toContain(
+      'SQS_QUEUE_URL is undefined'
     );
   });
 
@@ -149,8 +150,8 @@ describe('event-sink module', () => {
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
     expect(sqsMock.calls()).toHaveSize(0);
-    expect(response.body).toEqual(
-      '{"sessionId":"123-214-234","valid":true,"heartbeatInterval":5000,"QueueResp":{"message":"AWS_REGION is undefined"}}'
+    expect(response.body).toContain(
+      'AWS_REGION is undefined'
     );
   });
 
@@ -171,8 +172,8 @@ describe('event-sink module', () => {
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
     expect(sqsMock.calls()).toHaveSize(0);
-    expect(response.body).toEqual(
-      '{"sessionId":"123-214-234","valid":true,"heartbeatInterval":5000,"QueueResp":{"message":"No queue type specified"}}'
+    expect(response.body).toContain(
+      'No queue type specified'
     );
   });
 });

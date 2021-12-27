@@ -26,7 +26,7 @@ export class Validator implements EventValidator {
     const valid = validate({ event });
     this.logger.info(`Event: \n ${JSON.stringify(event)} is ${valid ? 'valid' : 'invalid'}`);
     if (!valid) {
-      this.logger.info(validate.errors);
+      this.logger.debug(validate.errors);
     }
     return valid;
   }

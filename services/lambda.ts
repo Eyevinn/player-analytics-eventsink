@@ -2,7 +2,7 @@ import { Validator } from '../lib/Validator';
 import { ALBResult, ALBEvent } from 'aws-lambda';
 import Sender from '../lib/Sender';
 import Logger from '../logging/logger';
-import { generateInvalidResponseBody, responseHeaders } from '../lib/route-helpers';
+import { generateInvalidResponseBody, generateResponseStatus, generateValidResponseBody, responseHeaders } from '../lib/route-helpers';
 
 export const handler = async (event: ALBEvent): Promise<ALBResult> => {
   const validator = new Validator(Logger);
@@ -23,18 +23,17 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
       const sender = new Sender(Logger);
       body.host = requestHost;
       const resp = await sender.send(body);
-      response.body = JSON.stringify({
-        ...body,
-        QueueResp: resp
-      });
+      response.body = JSON.stringify(generateValidResponseBody(body, resp));
     } else {
       response.body = JSON.stringify(generateInvalidResponseBody(body));
     }
     return response as ALBResult;
   }
+  // If wrong path, respond with 404. If unsupported method, respond with method not allowd. Otherwise bad access.
+  const { statusCode, statusDescription } = generateResponseStatus({ path: event.path, method: event.httpMethod });
   const response = {
-    statusCode: 400,
-    statusDescription: 'Bad Request',
+    statusCode,
+    statusDescription,
     headers: responseHeaders,
     body: JSON.stringify(generateInvalidResponseBody()),
   }

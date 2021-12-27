@@ -9,6 +9,7 @@ export interface responseBody {
   sessionId: string;
   valid: boolean;
   message?: string;
+  queueResponse?: any;
 }
 
 export type validatorResponse = {
