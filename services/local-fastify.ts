@@ -1,6 +1,6 @@
 import { Validator } from '../lib/Validator';
 import { generatedInitResponseBody, generateInvalidResponseBody, generateResponseStatus, generateValidResponseBody, responseHeaders } from "../lib/route-helpers";
-import Sender from '../lib/sender';
+import Sender from '../lib/Sender';
 import Logger from '../logging/logger';
 import { initResponseBody, responseBody } from '../types/interfaces';
 
