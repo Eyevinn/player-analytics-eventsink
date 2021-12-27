@@ -2,6 +2,7 @@ import { Validator } from '../lib/Validator';
 import { ALBResult, ALBEvent } from 'aws-lambda';
 import Sender from '../lib/Sender';
 import Logger from '../logging/logger';
+import { generateInvalidResponseBody, generateResponseStatus, generateValidResponseBody, responseHeaders } from '../lib/route-helpers';
 
 export const handler = async (event: ALBEvent): Promise<ALBResult> => {
   const validator = new Validator(Logger);
@@ -11,18 +12,30 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
       requestHost = event.headers['host'];
     }
     const body = JSON.parse(event.body);
-    const validatorResp = validator.validateEvent(body);
-    if (validatorResp['body']['valid']) {
-      const sender = new Sender(Logger);
-      body['host'] = requestHost;
-      const resp = await sender.send(body);
-      validatorResp['body'].QueueResp = resp;
+    const validEvent = validator.validateEvent(body);
+    const response = {
+      statusCode: validEvent ? 200 : 400,
+      statusDescription: validEvent ? 'OK' : 'Bad Request',
+      headers: responseHeaders,
+      body: '{}',
     }
-    validatorResp['body'] = JSON.stringify(validatorResp['body']);
-    return validatorResp as ALBResult;
-  } else {
-    const resp = validator.validResponse();
-    resp.body = '{}';
-    return resp as ALBResult;
+    if (validEvent) {
+      const sender = new Sender(Logger);
+      body.host = requestHost;
+      const resp = await sender.send(body);
+      response.body = JSON.stringify(generateValidResponseBody(body, resp));
+    } else {
+      response.body = JSON.stringify(generateInvalidResponseBody(body));
+    }
+    return response as ALBResult;
   }
+  // If wrong path, respond with 404. If unsupported method, respond with method not allowd. Otherwise bad access.
+  const { statusCode, statusDescription } = generateResponseStatus({ path: event.path, method: event.httpMethod });
+  const response = {
+    statusCode,
+    statusDescription,
+    headers: responseHeaders,
+    body: JSON.stringify(generateInvalidResponseBody()),
+  }
+  return response as ALBResult;
 };
