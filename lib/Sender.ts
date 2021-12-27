@@ -22,6 +22,9 @@ export default class Sender {
       case 'beanstalkd':
         QueueAdapter = (await import('@eyevinn/player-analytics-shared')).BeanstalkdAdapter;
         break;
+      case 'redis':
+        QueueAdapter = (await import('@eyevinn/player-analytics-shared')).RedisAdapter;
+        break;
       default:
         this.logger.warn('No queue type specified');
         return { message: 'No queue type specified' };
