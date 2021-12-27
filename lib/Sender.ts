@@ -19,6 +19,9 @@ export default class Sender {
       case 'SQS':
         QueueAdapter = (await import('@eyevinn/player-analytics-shared')).SqsQueueAdapter;
         break;
+      case 'beanstalkd':
+        QueueAdapter = (await import('@eyevinn/player-analytics-shared')).BeanstalkdAdapter;
+        break;
       default:
         this.logger.warn('No queue type specified');
         return { message: 'No queue type specified' };
