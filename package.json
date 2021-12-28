@@ -4,6 +4,7 @@
   "description": "",
   "main": "services/lambda.ts",
   "scripts": {
+    "dev": "ts-node services/local-fastify.ts",
     "test": "ts-node node_modules/jasmine/bin/jasmine",
     "build": "tsc -p tsconfig-build.json"
   },
@@ -30,10 +31,13 @@
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.42.0",
-    "@eyevinn/player-analytics-shared": "^0.2.3",
+    "@eyevinn/player-analytics-shared": "^0.4.1",
     "@types/aws-lambda": "^8.10.86",
     "@types/node": "^16.6.1",
     "ajv": "^8.8.2",
-    "winston": "^3.3.3"
+    "uuid": "^8.3.2",
+    "winston": "^3.3.3",
+    "fastify": "^3.25.2",
+    "@fastify/ajv-compiler": "^2.1.0"
   }
 }
