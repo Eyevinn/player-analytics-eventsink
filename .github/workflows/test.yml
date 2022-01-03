@@ -14,10 +14,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies and run tests
         env:
-          PUBLISH_PACKAGES: ${{ secrets.PUBLISH_PACKAGES }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_GITHUB_TOKEN }}
         run: |
           touch .npmrc
           echo @eyevinn:registry=https://npm.pkg.github.com >> .npmrc
-          echo //npm.pkg.github.com/:_authToken=${PUBLISH_PACKAGES} >> .npmrc
+          echo //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN} >> .npmrc
           npm ci
           npm test
