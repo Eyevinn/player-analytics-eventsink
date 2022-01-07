@@ -4,7 +4,7 @@
   "description": "",
   "main": "services/lambda.ts",
   "scripts": {
-    "dev": "ts-node services/local-fastify.ts",
+    "dev": "ts-node services/fastify.ts",
     "test": "ts-node node_modules/jasmine/bin/jasmine",
     "build": "tsc -p tsconfig-build.json"
   },
