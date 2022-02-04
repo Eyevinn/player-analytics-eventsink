@@ -1,4 +1,4 @@
-import * as main from '../services/lambda';
+import { Lambda } from '../index';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 import { mockClient } from 'aws-sdk-client-mock';
 import { valid_events, invalid_events } from './events/test_events';
@@ -47,7 +47,7 @@ describe('event-sink module', () => {
     for (const payload of valid_events) {
       event.body = JSON.stringify(payload);
       sqsMock.on(SendMessageCommand).resolves(sqsResp);
-      const response = await main.handler(event);
+      const response = await Lambda.handler(event);
       expect(response.statusCode).toEqual(200);
       let resp: {};
       if (payload.event === 'init') {
@@ -74,7 +74,7 @@ describe('event-sink module', () => {
     const event = request;
     for (const payload of invalid_events) {
       event.body = JSON.stringify(payload);
-      const response = await main.handler(event);
+      const response = await Lambda.handler(event);
       expect(response.statusCode).toEqual(400);
       expect(response.statusDescription).toEqual('Bad Request');
       expect(response.body).toEqual(
@@ -103,7 +103,7 @@ describe('event-sink module', () => {
     const event = request;
     event.path = '/validate';
     event.body = JSON.stringify({ event: 'live-event' });
-    const response = await main.handler(event);
+    const response = await Lambda.handler(event);
     expect(response.statusCode).toEqual(404);
     expect(response.statusDescription).toEqual('Not Found');
     expect(response.body).toContain("Invalid");
@@ -146,7 +146,7 @@ describe('event-sink module', () => {
     event.body = JSON.stringify(valid_events[0]);
 
     sqsMock.on(SendMessageCommand).resolves(sqsResp);
-    const response = await main.handler(event);
+    const response = await Lambda.handler(event);
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
     expect(sqsMock.calls()).toHaveSize(0);
@@ -168,7 +168,7 @@ describe('event-sink module', () => {
     event.body = JSON.stringify(valid_events[0]);
 
     sqsMock.on(SendMessageCommand).resolves(sqsResp);
-    const response = await main.handler(event);
+    const response = await Lambda.handler(event);
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
     expect(sqsMock.calls()).toHaveSize(0);
