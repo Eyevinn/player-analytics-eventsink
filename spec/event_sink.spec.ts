@@ -91,7 +91,7 @@ describe('event-sink module', () => {
     });
     const event = request;
     event.body = JSON.stringify({});
-    const response = await main.handler(event);
+    const response = await Lambda.handler(event);
     expect(response.statusCode).toEqual(400);
     expect(response.statusDescription).toEqual('Bad Request');
     expect(response.body).toEqual(
@@ -123,7 +123,7 @@ describe('event-sink module', () => {
     event.body = JSON.stringify(valid_events[0]);
 
     sqsMock.on(SendMessageCommand).resolves(sqsResp);
-    const response = await main.handler(event);
+    const response = await Lambda.handler(event);
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
     expect(sqsMock.calls()).toHaveSize(0);
