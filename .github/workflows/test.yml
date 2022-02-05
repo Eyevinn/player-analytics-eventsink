@@ -16,8 +16,5 @@ jobs:
         env:
           PUBLISH_PACKAGES: ${{ secrets.PUBLISH_PACKAGES }}
         run: |
-          touch .npmrc
-          echo @eyevinn:registry=https://npm.pkg.github.com >> .npmrc
-          echo //npm.pkg.github.com/:_authToken=${PUBLISH_PACKAGES} >> .npmrc
           npm ci
           npm test
