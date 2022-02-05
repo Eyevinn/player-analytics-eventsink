@@ -13,8 +13,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies and run tests
-        env:
-          PUBLISH_PACKAGES: ${{ secrets.PUBLISH_PACKAGES }}
         run: |
           npm ci
           npm test
