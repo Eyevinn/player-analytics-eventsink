@@ -38,7 +38,7 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
     }
     return response as ALBResult;
   }
-  // If wrong path, respond with 404. If unsupported method, respond with method not allowd. Otherwise bad access.
+  // If wrong path, respond with 404. If unsupported method, respond with method not allowed. Otherwise bad access.
   const { statusCode, statusDescription } = generateResponseStatus({ path: event.path, method: event.httpMethod });
   const response = {
     statusCode,

@@ -1,11 +1,12 @@
 {
-  "name": "player-analytics-eventsink",
+  "name": "@eyevinn/player-analytics-eventsink",
   "version": "0.0.1",
   "description": "",
-  "main": "services/lambda.ts",
+  "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node services/fastify.ts",
     "test": "ts-node node_modules/jasmine/bin/jasmine",
+    "postversion": "git push && git push --tags",
     "build": "tsc -p tsconfig-build.json"
   },
   "repository": {
@@ -13,7 +14,7 @@
     "url": "git+https://github.com/Eyevinn/player-analytics-eventsink.git"
   },
   "author": "Eyevinn Technology <work@eyevinn.se>",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "contributors": [
     "Oscar Nord <oscar.nord@eyevinn.se> (Eyevinn Technology AB)"
   ],
@@ -31,7 +32,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.42.0",
-    "@eyevinn/player-analytics-shared": "^0.4.1",
+    "@eyevinn/player-analytics-shared": "^0.5.0",
     "@types/aws-lambda": "^8.10.86",
     "@types/node": "^16.6.1",
     "ajv": "^8.8.2",

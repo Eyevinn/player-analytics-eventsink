@@ -5,7 +5,7 @@ on:
       - main
 jobs:
   deploy_source:
-    name: Build and deploy Lambda
+    name: Build and deploy Lambda to dev env
     strategy:
       matrix:
         node-version: [14.x]
@@ -18,12 +18,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: npm install and Build
         env:
-          PUBLISH_PACKAGES: ${{ secrets.PUBLISH_PACKAGES }}
           CI: true
         run: |
-          touch .npmrc
-          echo @eyevinn:registry=https://npm.pkg.github.com >> .npmrc
-          echo //npm.pkg.github.com/:_authToken=${PUBLISH_PACKAGES} >> .npmrc
           npm ci --only=prod
           npm run build --if-present
       - name: Move node_modules to build folder
