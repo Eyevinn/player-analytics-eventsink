@@ -1,8 +1,8 @@
 {
-  "name": "player-analytics-eventsink",
+  "name": "@eyevinn/player-analytics-eventsink",
   "version": "0.0.1",
   "description": "",
-  "main": "services/lambda.ts",
+  "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node services/fastify.ts",
     "test": "ts-node node_modules/jasmine/bin/jasmine",
@@ -13,7 +13,7 @@
     "url": "git+https://github.com/Eyevinn/player-analytics-eventsink.git"
   },
   "author": "Eyevinn Technology <work@eyevinn.se>",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "contributors": [
     "Oscar Nord <oscar.nord@eyevinn.se> (Eyevinn Technology AB)"
   ],
