@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "ts-node services/fastify.ts",
     "test": "ts-node node_modules/jasmine/bin/jasmine",
+    "postversion": "git push && git push --tags",
     "build": "tsc -p tsconfig-build.json"
   },
   "repository": {
