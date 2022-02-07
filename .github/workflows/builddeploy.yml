@@ -5,7 +5,7 @@ on:
       - main
 jobs:
   deploy_source:
-    name: Build and deploy Lambda
+    name: Build and deploy Lambda to dev env
     strategy:
       matrix:
         node-version: [14.x]
