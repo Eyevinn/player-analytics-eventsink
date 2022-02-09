@@ -2,7 +2,8 @@
   "name": "@eyevinn/player-analytics-eventsink",
   "version": "0.1.0",
   "description": "",
-  "main": "dist/index.js",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
   "scripts": {
     "dev": "ts-node services/fastify.ts",
     "test": "ts-node node_modules/jasmine/bin/jasmine",
