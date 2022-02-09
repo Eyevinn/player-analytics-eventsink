@@ -10,6 +10,10 @@
     "postversion": "git push && git push --tags",
     "build": "tsc -p tsconfig-build.json"
   },
+  "files": [
+    "build",
+    "resources"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Eyevinn/player-analytics-eventsink.git"
