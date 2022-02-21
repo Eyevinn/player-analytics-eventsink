@@ -6,8 +6,17 @@ const valid_events = [
     timestamp: -1,
     playhead: -1,
     duration: -1,
+  },
+  {
+    event: 'metadata',
+    sessionId: '123-214-234',
+    heartbeatInterval: 5000,
+    timestamp: -1,
+    playhead: -1,
+    duration: -1,
     payload: {
       live: false,
+      contentTitle: 'My Content',
       contentId: '',
       contentUrl: '',
       drmType: '',
@@ -164,6 +173,10 @@ const invalid_events = [
       deviceModel: '',
       deviceType: '',
     },
+  },
+  {
+    event: 'metadata',
+    sessionId: '123-214-234',
   },
   {
     event: 'heartbeat',

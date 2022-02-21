@@ -14,6 +14,7 @@ const schema = {
         { $ref: '#/definitions/heartbeat' },
         { $ref: '#/definitions/loaded' },
         { $ref: '#/definitions/loading' },
+        { $ref: '#/definitions/metadata' },
         { $ref: '#/definitions/paused' },
         { $ref: '#/definitions/playing' },
         { $ref: '#/definitions/seeked' },
@@ -29,7 +30,14 @@ const schema = {
       type: 'object',
     },
     bitrateChanged: {
-      required: ['event', 'sessionId', 'duration', 'playhead', 'timestamp', 'payload'],
+      required: [
+        'event',
+        'sessionId',
+        'duration',
+        'playhead',
+        'timestamp',
+        'payload',
+      ],
       additionalProperties: false,
       type: 'object',
       properties: {
@@ -120,7 +128,14 @@ const schema = {
       },
     },
     error: {
-      required: ['event', 'sessionId', 'duration', 'playhead', 'timestamp', 'payload'],
+      required: [
+        'event',
+        'sessionId',
+        'duration',
+        'playhead',
+        'timestamp',
+        'payload',
+      ],
       additionalProperties: false,
       type: 'object',
       properties: {
@@ -162,7 +177,7 @@ const schema = {
       },
     },
     init: {
-      required: ['event', 'sessionId', 'duration', 'playhead', 'timestamp', 'payload'],
+      required: ['event', 'sessionId', 'duration', 'playhead', 'timestamp'],
       additionalProperties: false,
       type: 'object',
       properties: {
@@ -184,37 +199,6 @@ const schema = {
         },
         timestamp: {
           type: 'number',
-        },
-        payload: {
-          properties: {
-            contentId: {
-              type: 'string',
-            },
-            contentUrl: {
-              type: 'string',
-            },
-            deviceId: {
-              type: 'string',
-            },
-            deviceModel: {
-              type: 'string',
-            },
-            deviceType: {
-              type: 'string',
-            },
-            drmType: {
-              type: 'string',
-            },
-            live: {
-              type: 'boolean',
-            },
-            userId: {
-              type: 'string',
-            },
-          },
-          required: ['contentId', 'contentUrl', 'live'],
-          additionalProperties: false,
-          type: 'object',
         },
       },
     },
@@ -261,6 +245,72 @@ const schema = {
         },
         timestamp: {
           type: 'number',
+        },
+      },
+    },
+    metadata: {
+      required: [
+        'event',
+        'sessionId',
+        'duration',
+        'playhead',
+        'timestamp',
+        'payload',
+      ],
+      additionalProperties: false,
+      type: 'object',
+      properties: {
+        event: {
+          enum: ['metadata'],
+          type: 'string',
+        },
+        sessionId: {
+          type: 'string',
+        },
+        heartbeatInterval: {
+          type: 'number',
+        },
+        duration: {
+          type: 'number',
+        },
+        playhead: {
+          type: 'number',
+        },
+        timestamp: {
+          type: 'number',
+        },
+        payload: {
+          properties: {
+            live: {
+              type: 'boolean',
+            },
+            contentTitle: {
+              type: 'string',
+            },
+            contentId: {
+              type: 'string',
+            },
+            contentUrl: {
+              type: 'string',
+            },
+            drmType: {
+              type: 'string',
+            },
+            userId: {
+              type: 'string',
+            },
+            deviceId: {
+              type: 'string',
+            },
+            deviceModel: {
+              type: 'string',
+            },
+            deviceType: {
+              type: 'string',
+            },
+          },
+          additionalProperties: false,
+          type: 'object',
         },
       },
     },
@@ -357,7 +407,14 @@ const schema = {
       },
     },
     warning: {
-      required: ['event', 'duration', 'playhead', 'timestamp', 'sessionId', 'payload'],
+      required: [
+        'event',
+        'duration',
+        'playhead',
+        'timestamp',
+        'sessionId',
+        'payload',
+      ],
       additionalProperties: false,
       type: 'object',
       properties: {
