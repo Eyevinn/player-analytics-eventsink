@@ -2,12 +2,19 @@ const valid_events = [
   {
     event: 'init',
     sessionId: '123-214-234',
-    heartbeatInterval: 5000,
+    timestamp: -1,
+    playhead: -1,
+    duration: -1,
+  },
+  {
+    event: 'metadata',
+    sessionId: '123-214-234',
     timestamp: -1,
     playhead: -1,
     duration: -1,
     payload: {
       live: false,
+      contentTitle: 'My Content',
       contentId: '',
       contentUrl: '',
       drmType: '',
@@ -23,24 +30,6 @@ const valid_events = [
     timestamp: 0,
     playhead: 0,
     duration: 0,
-    payload: {
-      events: [
-        {
-          event: 'loading',
-          sessionId: '123-214-234',
-          timestamp: 0,
-          playhead: 0,
-          duration: 0,
-        },
-        {
-          event: 'loaded',
-          sessionId: '123-214-234',
-          timestamp: 0,
-          playhead: 0,
-          duration: 0,
-        },
-      ],
-    },
   },
   {
     event: 'loading',
@@ -105,11 +94,11 @@ const valid_events = [
     playhead: 0,
     duration: 0,
     payload: {
-      bitrate: '300',
-      width: '1920',
-      height: '1080',
-      videoBitrate: '300',
-      audioBitrate: '300',
+      bitrate: 300,
+      width: 1920,
+      height: 1080,
+      videoBitrate: 300,
+      audioBitrate: 300,
     },
   },
   {
@@ -154,40 +143,17 @@ const invalid_events = [
   {
     event: 'init',
     sessionId: '123-214-234',
-    payload: {
-      live: false,
-      contentId: '',
-      contentUrl: '',
-      drmType: '',
-      userId: '',
-      deviceId: '',
-      deviceModel: '',
-      deviceType: '',
-    },
+  },
+  {
+    event: 'metadata',
+    sessionId: '123-214-234',
+    timestamp: 0,
   },
   {
     event: 'heartbeat',
     sessionId: '123-214-234',
     timestamp: 0,
     duration: 0,
-    payload: {
-      events: [
-        {
-          event: 'loading',
-          sessionId: '123-214-234',
-          timestamp: 0,
-          playhead: 0,
-          duration: 0,
-        },
-        {
-          event: 'loaded',
-          sessionId: '123-214-234',
-          timestamp: 0,
-          playhead: 0,
-          duration: 0,
-        },
-      ],
-    },
   },
   {
     event: 'loading',
