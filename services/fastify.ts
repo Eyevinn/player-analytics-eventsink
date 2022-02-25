@@ -1,5 +1,5 @@
 import { Validator } from '../lib/Validator';
-import { generatedInitResponseBody, generateInvalidResponseBody, generateResponseStatus, generateValidResponseBody, responseHeaders } from "../lib/route-helpers";
+import { generateInitResponseBody, generateInvalidResponseBody, generateResponseStatus, generateValidResponseBody, responseHeaders } from "../lib/route-helpers";
 import Sender from '../lib/Sender';
 import Logger from '../logging/logger';
 import { initResponseBody, responseBody } from '../types/interfaces';
@@ -24,19 +24,19 @@ fastify.post('/', async (request, reply) => {
     const resp = await sender.send(body);
     const responseBody: initResponseBody | responseBody =
       body.event === 'init'
-        ? generatedInitResponseBody(body)
+        ? generateInitResponseBody(body)
         : generateValidResponseBody(body, resp);
     console.log(responseBody);
     reply
       .status(200)
       .headers(responseHeaders)
       .send(responseBody);
-  } else {
-    reply
-      .status(400)
-      .headers(responseHeaders)
-      .send(generateInvalidResponseBody(body));
-  }
+    } else {
+      reply
+        .status(400)
+        .headers(responseHeaders)
+        .send(generateInvalidResponseBody(body));
+    }
 });
 
 fastify.route({
