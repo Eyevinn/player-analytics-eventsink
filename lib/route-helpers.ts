@@ -22,7 +22,7 @@ export function generateValidResponseBody(event: Record<string, any>, queueRespo
   let body: responseBody = {
     sessionId: event.sessionId,
     valid: true,
-    queueResponse: queueResponse
+    queueResponse: queueResponse,
   };
   return body;
 }
@@ -31,7 +31,7 @@ export function generateValidResponseBody(event: Record<string, any>, queueRespo
  * Method that returns an invalid response
  * @param optional event object
  */
-export function generateInvalidResponseBody(event?: Record<string, any>): responseBody {
+ export function generateInvalidResponseBody(event?: Record<string, any>): responseBody {
   return {
     sessionId: event?.sessionId || -1,
     message: 'Invalid player event',
@@ -39,7 +39,7 @@ export function generateInvalidResponseBody(event?: Record<string, any>): respon
   }
 }
 
-export function generatedInitResponseBody(event: Record<string, any>): initResponseBody {
+export function generateInitResponseBody(event: Record<string, any>): initResponseBody {
   return {
     sessionId: event.sessionId || uuidv4(),
     heartbeatInterval: event.heartbeatInterval || process.env.HEARTBEAT_INTERVAL || 5000,
