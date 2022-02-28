@@ -38,7 +38,7 @@
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.42.0",
     "@eyevinn/player-analytics-shared": "^0.5.0",
-    "@eyevinn/player-analytics-specification": "^0.3.0",
+    "@eyevinn/player-analytics-specification": "^0.3.1",
     "@fastify/ajv-compiler": "^2.1.0",
     "@types/aws-lambda": "^8.10.86",
     "@types/node": "^16.6.1",
