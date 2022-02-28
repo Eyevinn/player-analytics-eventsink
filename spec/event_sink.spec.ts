@@ -7,7 +7,7 @@ import { SqsQueueAdapter } from '@eyevinn/player-analytics-shared';
 const sqsMock = mockClient(SQSClient);
 let request: any;
 
-fdescribe('event-sink module', () => {
+describe('event-sink module', () => {
   beforeEach(() => {
     request = {
       path: '/',
