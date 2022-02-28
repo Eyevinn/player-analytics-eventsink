@@ -38,12 +38,13 @@
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.42.0",
     "@eyevinn/player-analytics-shared": "^0.5.0",
+    "@eyevinn/player-analytics-specification": "^0.3.1",
+    "@fastify/ajv-compiler": "^2.1.0",
     "@types/aws-lambda": "^8.10.86",
     "@types/node": "^16.6.1",
     "ajv": "^8.8.2",
-    "uuid": "^8.3.2",
-    "winston": "^3.3.3",
     "fastify": "^3.25.2",
-    "@fastify/ajv-compiler": "^2.1.0"
+    "uuid": "^8.3.2",
+    "winston": "^3.3.3"
   }
 }

@@ -5,13 +5,12 @@ import Ajv from 'ajv';
 
 export class Validator implements EventValidator {
   logger: winston.Logger;
-  eventSchema: any;
+  eventSchema: object;
 
   constructor(logger: winston.Logger) {
     this.logger = logger;
     this.eventSchema = schema;
   }
-
   /**
    * Method that validates a single event object
    * @param event the event object
@@ -21,13 +20,20 @@ export class Validator implements EventValidator {
       this.logger.error('Event is undefined');
       return false;
     }
-    const validator = new Ajv();
-    const validate = validator.compile(this.eventSchema);
-    const valid = validate({ event });
-    this.logger.info(`Event: \n ${JSON.stringify(event)} is ${valid ? 'valid' : 'invalid'}`);
-    if (!valid) {
-      this.logger.debug(validate.errors);
+
+    const ajv = new Ajv();
+    ajv.addSchema(this.eventSchema);
+    const validator = ajv.getSchema('#/definitions/TPlayerAnalyticsEvent');
+    if (validator) {
+      const valid = validator(event);
+      this.logger.info(`Event: \n ${JSON.stringify(event)} is ${valid ? 'valid' : 'invalid'}`);
+      if (!valid) {
+        this.logger.debug(validator.errors);
+      }
+      return valid as boolean;
+    } else {
+      this.logger.error('AJV failed in generating a validator for specified JSON schema');
+      return false;
     }
-    return valid;
   }
 }

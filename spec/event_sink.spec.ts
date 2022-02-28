@@ -31,8 +31,7 @@ describe('event-sink module', () => {
     };
     process.env.AWS_REGION = 'us-east-1';
     process.env.QUEUE_TYPE = 'SQS';
-    process.env.SQS_QUEUE_URL =
-      'https://sqs.us-east-1.amazonaws.com/1234/test-queue';
+    process.env.SQS_QUEUE_URL = 'https://sqs.us-east-1.amazonaws.com/1234/test-queue';
     sqsMock.reset();
   });
 
@@ -48,20 +47,16 @@ describe('event-sink module', () => {
       event.body = JSON.stringify(payload);
       sqsMock.on(SendMessageCommand).resolves(sqsResp);
       const response = await Lambda.handler(event);
+      if (response.statusCode === 400) console.log(response.body);
       expect(response.statusCode).toEqual(200);
-      let resp: {};
       if (payload.event === 'init') {
-        resp = {
-          sessionId: '123-214-234',
-          valid: true,
-          heartbeatInterval: 5000
-        };
+        expect(response.body).toContain('"sessionId":"123-214-234"');
+        expect(response.body).toContain('"heartbeatInterval":5000');
       } else {
-        resp = { sessionId: '123-214-234', valid: true, QueueResp: sqsResp };
+        expect(response.body).toContain('"sessionId":"123-214-234"');
+        expect(response.body).toContain('"valid":true');
+        expect(response.body).toContain('"MessageId":"12345678-4444-5555-6666-111122223333"');
       }
-      expect(response.body).toContain('"sessionId":"123-214-234"');
-      expect(response.body).toContain('"valid":true');
-      expect(response.body).toContain('"MessageId":"12345678-4444-5555-6666-111122223333"');
     }
   });
 
@@ -94,9 +89,7 @@ describe('event-sink module', () => {
     const response = await Lambda.handler(event);
     expect(response.statusCode).toEqual(400);
     expect(response.statusDescription).toEqual('Bad Request');
-    expect(response.body).toEqual(
-      '{"sessionId":-1,"message":"Invalid player event","valid":false}'
-    );
+    expect(response.body).toEqual('{"sessionId":-1,"message":"Invalid player event","valid":false}');
   });
 
   it('should dismiss request if "path" != "/" ', async () => {
@@ -106,7 +99,7 @@ describe('event-sink module', () => {
     const response = await Lambda.handler(event);
     expect(response.statusCode).toEqual(404);
     expect(response.statusDescription).toEqual('Not Found');
-    expect(response.body).toContain("Invalid");
+    expect(response.body).toContain('Invalid');
   });
 
   it('should not push to SQS queue if sqs queue env is not set', async () => {
@@ -120,16 +113,14 @@ describe('event-sink module', () => {
     const sqsResp = { MessageId: '12345678-4444-5555-6666-111122223333' };
     const event = request;
     event.path = '/';
-    event.body = JSON.stringify(valid_events[0]);
+    event.body = JSON.stringify(valid_events[4]);
 
     sqsMock.on(SendMessageCommand).resolves(sqsResp);
     const response = await Lambda.handler(event);
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
     expect(sqsMock.calls()).toHaveSize(0);
-    expect(response.body).toContain(
-      'SQS_QUEUE_URL is undefined'
-    );
+    expect(response.body).toContain('SQS_QUEUE_URL is undefined');
   });
 
   it('should not push to SQS queue if AWS region env is not set', async () => {
@@ -143,16 +134,14 @@ describe('event-sink module', () => {
     const sqsResp = { MessageId: '12345678-4444-5555-6666-111122223333' };
     const event = request;
     event.path = '/';
-    event.body = JSON.stringify(valid_events[0]);
+    event.body = JSON.stringify(valid_events[1]);
 
     sqsMock.on(SendMessageCommand).resolves(sqsResp);
     const response = await Lambda.handler(event);
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
     expect(sqsMock.calls()).toHaveSize(0);
-    expect(response.body).toContain(
-      'AWS_REGION is undefined'
-    );
+    expect(response.body).toContain('AWS_REGION is undefined');
   });
 
   it('should not push to queue if queue env is not set', async () => {
@@ -165,15 +154,13 @@ describe('event-sink module', () => {
     const sqsResp = { MessageId: '12345678-4444-5555-6666-111122223333' };
     const event = request;
     event.path = '/';
-    event.body = JSON.stringify(valid_events[0]);
+    event.body = JSON.stringify(valid_events[1]);
 
     sqsMock.on(SendMessageCommand).resolves(sqsResp);
     const response = await Lambda.handler(event);
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
     expect(sqsMock.calls()).toHaveSize(0);
-    expect(response.body).toContain(
-      'No queue type specified'
-    );
+    expect(response.body).toContain('No queue type specified');
   });
 });
