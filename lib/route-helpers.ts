@@ -1,11 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
 import { initResponseBody, responseBody } from '../types/interfaces';
+import * as packageJson from '../node_modules/@eyevinn/player-analytics-specification/package.json'
 
 export const responseHeaders = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type, Origin',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'X-EPAS-Version': `${packageJson.version}`
 };
 
 export function generateResponseStatus({ path, method }: { path: string; method: string }): { statusCode: number; statusDescription: string } {

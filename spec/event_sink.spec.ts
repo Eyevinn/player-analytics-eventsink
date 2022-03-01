@@ -49,6 +49,7 @@ describe('event-sink module', () => {
       const response = await Lambda.handler(event);
       if (response.statusCode === 400) console.log(response.body);
       expect(response.statusCode).toEqual(200);
+      expect(Object.keys(response.headers ? response.headers : {})).toContain('X-EPAS-Version');
       if (payload.event === 'init') {
         expect(response.body).toContain('"sessionId":"123-214-234"');
         expect(response.body).toContain('"heartbeatInterval":5000');
