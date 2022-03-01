@@ -1,11 +1,15 @@
 import { v4 as uuidv4 } from 'uuid';
 import { initResponseBody, responseBody } from '../types/interfaces';
 
+const { dependencies } = require("../package.json");
+
+const epasVersion = dependencies["@eyevinn/player-analytics-specification"].replace("^", "");
 export const responseHeaders = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type, Origin',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'X-EPAS-Version': epasVersion || "n/a",
 };
 
 export function generateResponseStatus({ path, method }: { path: string; method: string }): { statusCode: number; statusDescription: string } {
