@@ -7,7 +7,7 @@ const epasVersion = version;
 export const responseHeaders = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Origin',
+  'Access-Control-Allow-Headers': 'Content-Type, Origin, X-EPAS-Event, X-EPAS-Version',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'X-EPAS-Version': epasVersion || "n/a",
 };
