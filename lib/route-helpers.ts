@@ -1,7 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { initResponseBody, responseBody } from '../types/interfaces';
 
-const { version } = require("../node_modules/@eyevinn/player-analytics-specification/package.json");
+//const { version } = require("../node_modules/@eyevinn/player-analytics-specification/package.json");
+const version = "0.3";
 
 const epasVersion = version;
 export const responseHeaders = {
