@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
 import { initResponseBody, responseBody } from '../types/interfaces';
 
-//const { version } = require("../node_modules/@eyevinn/player-analytics-specification/package.json");
-const version = "0.3";
+import packageJson from "@eyevinn/player-analytics-specification/package.json";
 
-const epasVersion = version;
+const epasVersion = packageJson.version;
+
 export const responseHeaders = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
