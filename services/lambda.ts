@@ -19,7 +19,9 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
       requestHost = event.headers['host'];
     }
     const body = JSON.parse(event.body);
+    const validatorTs = Date.now();
     const validEvent = validator.validateEvent(body);
+    Logger.debug(`Time taken to validate event-> ${Date.now() - validatorTs}ms`);
     const response = {
       statusCode: validEvent ? 200 : 400,
       statusDescription: validEvent ? 'OK' : 'Bad Request',
@@ -29,7 +31,9 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
     if (validEvent) {
       const sender = new Sender(Logger);
       body.host = requestHost;
+      const senderTs = Date.now();
       const resp = await sender.send(body);
+      Logger.debug(`Time taken to send event to Queue-> ${Date.now() - senderTs}ms`);
       const responseBody: initResponseBody | responseBody =
         body.event === 'init' ? generateInitResponseBody(body) : generateValidResponseBody(body, resp);
       response.body = JSON.stringify(responseBody);

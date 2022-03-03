@@ -18,25 +18,29 @@ fastify.post('/', async (request, reply) => {
   const body = request.body instanceof Object
     ? request.body
     : JSON.parse(request.body);
+  const validatorTs = Date.now();
   const validEvent = validator.validateEvent(body);
+  Logger.debug(`Time taken to validate event-> ${Date.now() - validatorTs}ms`);
   if (validEvent) {
     let sender = new Sender(Logger);
+    const senderTs = Date.now();
     const resp = await sender.send(body);
+    Logger.debug(`Time taken to send event to Queue-> ${Date.now() - senderTs}ms`);
     const responseBody: initResponseBody | responseBody =
-      body.event === 'init'
-        ? generateInitResponseBody(body)
-        : generateValidResponseBody(body, resp);
-    console.log(responseBody);
-    reply
-      .status(200)
-      .headers(responseHeaders)
-      .send(responseBody);
-    } else {
-      reply
-        .status(400)
-        .headers(responseHeaders)
-        .send(generateInvalidResponseBody(body));
-    }
+    body.event === 'init'
+    ? generateInitResponseBody(body)
+    : generateValidResponseBody(body, resp);
+console.log(responseBody);
+reply
+  .status(200)
+  .headers(responseHeaders)
+  .send(responseBody);
+} else {
+  reply
+    .status(400)
+    .headers(responseHeaders)
+    .send(generateInvalidResponseBody(body));
+}
 });
 
 fastify.route({

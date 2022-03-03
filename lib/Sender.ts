@@ -30,6 +30,9 @@ export default class Sender {
         return { message: 'No queue type specified' };
     }
     const queue = new QueueAdapter(this.logger);
-    return queue.pushToQueue(event);
+    const queueTs = Date.now();
+    const queueResponse = await queue.pushToQueue(event);
+    this.logger.debug(`Time taken to run "await queue.pushToQueue(event)"-> ${Date.now() - queueTs}ms`);
+    return queueResponse;
   }
 }
