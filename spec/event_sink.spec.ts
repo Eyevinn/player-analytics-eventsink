@@ -7,7 +7,7 @@ import { SqsQueueAdapter } from '@eyevinn/player-analytics-shared';
 const sqsMock = mockClient(SQSClient);
 let request: any;
 
-describe('event-sink module', () => {
+describe('event-sink lambda module', () => {
   beforeEach(() => {
     request = {
       path: '/',
@@ -26,6 +26,12 @@ describe('event-sink module', () => {
             value: 'd123.cf.net',
           },
         ],
+        origin: [
+          {
+            key: 'Origin',
+            value: 'https://test.domain.net'
+          }
+        ]
       },
       body: '{}',
     };
@@ -105,6 +111,29 @@ describe('event-sink module', () => {
     expect(response.body).toContain('Invalid');
   });
 
+  it('should validate allowed origin if CORS_ORIGIN is defined', async () => {
+    process.env.CORS_ORIGIN = 'https://test.domain.net, http://test.domain.net'
+    const event = request;
+    event.httpMethod = 'OPTIONS';
+    const response = await Lambda.handler(event);
+    if (response.headers) {
+      expect(response.headers['Access-Control-Allow-Origin']).toEqual('https://test.domain.net');
+      expect(response.headers['Vary']).toEqual('Origin');
+    }
+  });
+
+  it('should not validate allowed origin if CORS_ORIGIN is not defined', async () => {
+    process.env.CORS_ORIGIN = undefined;
+    const event = request;
+    event.httpMethod = 'OPTIONS';
+    const response = await Lambda.handler(event);
+    if (response.headers) {
+      expect(response.headers['Access-Control-Allow-Origin']).toEqual('*');
+      expect(response.headers['Vary']).toBeUndefined();
+    }
+  });
+
+
   it('should not push to SQS queue if sqs queue env is not set', async () => {
     spyOn(SqsQueueAdapter.prototype, 'pushToQueue').and.callFake(function () {
       return Promise.resolve({
@@ -166,4 +195,11 @@ describe('event-sink module', () => {
     expect(sqsMock.calls()).toHaveSize(0);
     expect(response.body).toContain('No queue type specified');
   });
+});
+
+describe('event-sink fastify module', () => {
+  it('should validate allowed origin if CORS_ORIGIN is defined', async () => {
+    process.env.CORS_ORIGIN = 'https://test.domain.net, http://test.domain.net'
+
+  });  
 });

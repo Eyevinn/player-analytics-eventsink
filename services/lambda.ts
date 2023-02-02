@@ -7,12 +7,19 @@ import {
   generateInvalidResponseBody,
   generateResponseStatus,
   generateValidResponseBody,
-  responseHeaders,
+  generateResponseHeaders,
 } from '../lib/route-helpers';
 import { initResponseBody, responseBody } from '../types/interfaces';
 
 export const handler = async (event: ALBEvent): Promise<ALBResult> => {
   const validator = new Validator(Logger);
+
+  let origin: string = 'unknown';
+  if (event.headers && event.headers['origin']) {
+    origin = event.headers['origin'];
+  }
+  const responseHeaders = generateResponseHeaders(origin);
+  
   if (event.httpMethod === 'POST' && event.path === '/' && event['body']) {
     let requestHost: string = 'unknown';
     if (event.headers && event.headers['host']) {

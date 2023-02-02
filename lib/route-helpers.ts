@@ -5,7 +5,7 @@ import packageJson from "@eyevinn/player-analytics-specification/package.json";
 
 const epasVersion = packageJson.version;
 
-export const responseHeaders = {
+const defaultResponseHeaders = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type, Origin, X-EPAS-Event, X-EPAS-Version',
@@ -49,4 +49,34 @@ export function generateInitResponseBody(event: Record<string, any>): initRespon
     sessionId: event.sessionId || uuidv4(),
     heartbeatInterval: event.heartbeatInterval || process.env.HEARTBEAT_INTERVAL || 5000,
   };
+}
+
+function shouldValidateOrigin(): boolean {
+  return (process.env.CORS_ORIGIN !== undefined);
+}
+
+function getAllowedOrigins(): string[] {
+  if (process.env.CORS_ORIGIN !== undefined) {
+    return process.env.CORS_ORIGIN.split(",").map(o => o.trim());
+  }
+  return [];
+}
+
+function isAllowedOrigin(origin: string):  boolean {
+  if (shouldValidateOrigin()) {
+    const allowedOrigins = getAllowedOrigins();
+    return allowedOrigins.includes(origin);
+  }
+  return true;
+}
+
+export function generateResponseHeaders(origin: string) {
+  let responseHeaders = defaultResponseHeaders;
+
+  if (shouldValidateOrigin()) {
+    if (isAllowedOrigin(origin)) {
+      responseHeaders['Access-Control-Allow-Origin'] = origin;
+      responseHeaders['Vary'] = 'Origin';
+    }
+  }
 }
