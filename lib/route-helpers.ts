@@ -56,7 +56,7 @@ function shouldValidateOrigin(): boolean {
 }
 
 function getAllowedOrigins(): string[] {
-  if (process.env.CORS_ORIGIN !== undefined) {
+  if (process.env.CORS_ORIGIN) {
     return process.env.CORS_ORIGIN.split(",").map(o => o.trim());
   }
   return [];
@@ -78,5 +78,6 @@ export function generateResponseHeaders(origin: string) {
       responseHeaders['Access-Control-Allow-Origin'] = origin;
       responseHeaders['Vary'] = 'Origin';
     }
+    return responseHeaders;
   }
 }

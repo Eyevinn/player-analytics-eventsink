@@ -15,8 +15,8 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
   const validator = new Validator(Logger);
 
   let origin: string = 'unknown';
-  if (event.headers && event.headers['origin']) {
-    origin = event.headers['origin'];
+  if (event.headers && event.headers['Origin']) {
+    origin = event.headers['Origin'];
   }
   const responseHeaders = generateResponseHeaders(origin);
   

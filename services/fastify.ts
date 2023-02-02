@@ -1,13 +1,20 @@
 import { Validator } from '../lib/Validator';
-import { generateInitResponseBody, generateInvalidResponseBody, generateResponseStatus, generateValidResponseBody, responseHeaders } from "../lib/route-helpers";
+import { 
+  generateInitResponseBody, 
+  generateInvalidResponseBody, 
+  generateResponseStatus, 
+  generateValidResponseBody, 
+  generateResponseHeaders 
+} from "../lib/route-helpers";
 import Sender from '../lib/Sender';
 import Logger from '../logging/logger';
 import { initResponseBody, responseBody } from '../types/interfaces';
 
-const fastify = require('fastify')()
+export const fastify = require('fastify')()
 const validator = new Validator(Logger);
 
 fastify.options('/', (request, reply) => {
+  const responseHeaders = generateResponseHeaders(request.headers['origin']);
   reply
     .status(200)
     .headers(responseHeaders)
@@ -18,6 +25,7 @@ fastify.post('/', async (request, reply) => {
   const body = request.body instanceof Object
     ? request.body
     : JSON.parse(request.body);
+  const responseHeaders = generateResponseHeaders(request.headers['Origin']);
   const validatorTs = Date.now();
   const validEvent = validator.validateEvent(body);
   Logger.debug(`Time taken to validate event-> ${Date.now() - validatorTs}ms`);
@@ -30,7 +38,6 @@ fastify.post('/', async (request, reply) => {
     body.event === 'init'
     ? generateInitResponseBody(body)
     : generateValidResponseBody(body, resp);
-console.log(responseBody);
 reply
   .status(200)
   .headers(responseHeaders)
@@ -47,6 +54,7 @@ fastify.route({
   method: ['GET', 'POST', 'OPTIONS', 'PATCH', 'PUT', 'DELETE'],
   url: '/*',
   handler: (request, reply) => {
+    const responseHeaders = generateResponseHeaders(request.headers['Origin']);
     const { statusCode, statusDescription } = generateResponseStatus({ path: request.url, method: request.method });
     reply.status(statusCode).headers(responseHeaders).send(statusDescription);
   },

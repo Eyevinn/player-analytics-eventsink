@@ -3,6 +3,7 @@ import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 import { mockClient } from 'aws-sdk-client-mock';
 import { valid_events, invalid_events } from './events/test_events';
 import { SqsQueueAdapter } from '@eyevinn/player-analytics-shared';
+import { fastify } from '../services/fastify';
 
 const sqsMock = mockClient(SQSClient);
 let request: any;
@@ -14,24 +15,9 @@ describe('event-sink lambda module', () => {
       httpMethod: 'POST',
       clientIp: '2001:cdba::3257:9652',
       headers: {
-        'user-agent': [
-          {
-            key: 'User-Agent',
-            value: 'test-agent',
-          },
-        ],
-        host: [
-          {
-            key: 'Host',
-            value: 'd123.cf.net',
-          },
-        ],
-        origin: [
-          {
-            key: 'Origin',
-            value: 'https://test.domain.net'
-          }
-        ]
+        'User-Agent': 'test-agent',
+        'Host': 'd123.cf.net',
+        'Origin': 'https://test.domain.net'
       },
       body: '{}',
     };
@@ -112,8 +98,9 @@ describe('event-sink lambda module', () => {
   });
 
   it('should validate allowed origin if CORS_ORIGIN is defined', async () => {
-    process.env.CORS_ORIGIN = 'https://test.domain.net, http://test.domain.net'
-    const event = request;
+    process.env.CORS_ORIGIN = 'https://test.domain.net, http://test.domain.net';
+    let event = request;
+    event.path = '/';
     event.httpMethod = 'OPTIONS';
     const response = await Lambda.handler(event);
     if (response.headers) {
@@ -123,8 +110,9 @@ describe('event-sink lambda module', () => {
   });
 
   it('should not validate allowed origin if CORS_ORIGIN is not defined', async () => {
-    process.env.CORS_ORIGIN = undefined;
-    const event = request;
+    delete process.env.CORS_ORIGIN;
+    let event = request;
+    event.path = '/';
     event.httpMethod = 'OPTIONS';
     const response = await Lambda.handler(event);
     if (response.headers) {
@@ -199,7 +187,17 @@ describe('event-sink lambda module', () => {
 
 describe('event-sink fastify module', () => {
   it('should validate allowed origin if CORS_ORIGIN is defined', async () => {
-    process.env.CORS_ORIGIN = 'https://test.domain.net, http://test.domain.net'
-
+    process.env.CORS_ORIGIN = 'https://test.domain.net, http://test.domain.net';
+    const response = await fastify.inject({
+      method: 'OPTIONS',
+      url: '/',
+      headers: {
+        'origin': 'https://test.domain.net'
+      }
+    });
+    if (response.headers) {
+      expect(response.headers['access-control-allow-origin']).toEqual('https://test.domain.net');
+      expect(response.headers['vary']).toEqual('Origin');
+    }    
   });  
 });
