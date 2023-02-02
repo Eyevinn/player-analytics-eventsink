@@ -51,33 +51,17 @@ export function generateInitResponseBody(event: Record<string, any>): initRespon
   };
 }
 
-function shouldValidateOrigin(): boolean {
-  return (process.env.CORS_ORIGIN !== undefined);
-}
-
-function getAllowedOrigins(): string[] {
-  if (process.env.CORS_ORIGIN) {
-    return process.env.CORS_ORIGIN.split(",").map(o => o.trim());
-  }
-  return [];
-}
-
-function isAllowedOrigin(origin: string):  boolean {
-  if (shouldValidateOrigin()) {
-    const allowedOrigins = getAllowedOrigins();
-    return allowedOrigins.includes(origin);
-  }
-  return true;
-}
-
 export function generateResponseHeaders(origin: string) {
+  const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",").map(o => o.trim()) : [];
+  const allowAnyOrigin = allowedOrigins.length === 0;  
+
   let responseHeaders = defaultResponseHeaders;
 
-  if (shouldValidateOrigin()) {
-    if (isAllowedOrigin(origin)) {
-      responseHeaders['Access-Control-Allow-Origin'] = origin;
-      responseHeaders['Vary'] = 'Origin';
-    }
-    return responseHeaders;
+  if (allowAnyOrigin) {
+    responseHeaders['Access-Control-Allow-Origin'] = '*';
+  } else if (allowedOrigins.includes(origin)) {
+    responseHeaders['Access-Control-Allow-Origin'] = origin;
+    responseHeaders['Vary'] = 'Origin';
   }
+  return responseHeaders;
 }
