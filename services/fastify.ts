@@ -54,7 +54,8 @@ fastify.route({
 
 const start = async () => {
   try {
-    await fastify.listen(3000);
+    await fastify.listen({ port: process.env.PORT ? Number(process.env.PORT) : 3000, host: '0.0.0.0' });
+    Logger.info(`Server started on ${fastify.server.address().address}:${fastify.server.address().port}`);
   } catch (err) {
     Logger.error("Error starting server", err);
     process.exit(1);

@@ -8,7 +8,7 @@ jobs:
     name: Build and deploy Lambda to dev env
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [18.x]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
