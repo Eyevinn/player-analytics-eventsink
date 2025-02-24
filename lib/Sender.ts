@@ -32,6 +32,7 @@ export default class Sender {
     const queue = new QueueAdapter(this.logger);
     const queueTs = Date.now();
     const queueResponse = await queue.pushToQueue(event);
+    console.log(queueResponse);
     this.logger.debug(`Time taken to run "await queue.pushToQueue(event)"-> ${Date.now() - queueTs}ms`);
     return queueResponse;
   }
