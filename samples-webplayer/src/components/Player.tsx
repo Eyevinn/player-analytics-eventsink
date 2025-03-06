@@ -22,22 +22,23 @@ export default function Player({ src, autoplay = false }: PlayerProps) {
     let playerAnalytics: PlayerAnalyticsConnector | undefined;
 
     if (elRef.current) {
-      instance = webplayer(elRef.current, {
-      });
+      instance = webplayer(elRef.current, {});
       instance.player.load(src, autoplay);
 
       const videoEl = elRef.current.querySelector("video") as HTMLVideoElement | null;
       if (videoEl) {
         playerAnalytics = new PlayerAnalyticsConnector(EVENTSINK_URL);
 
+        // 4) Initialize analytics to set up your session
         playerAnalytics
           .init({ sessionId })
           .then(() => {
+            // 5) Attach the analytics to the video element to automatically capture events
             playerAnalytics?.load(videoEl);
 
             playerAnalytics?.reportMetadata({
               live: false,
-              contentTitle: "Content Title",
+              contentTitle: "Eyevinn Content Title",
               contentUrl: src,
               // Additional metadata if/when you have it:
               // drmType: "",
@@ -50,14 +51,15 @@ export default function Player({ src, autoplay = false }: PlayerProps) {
           })
           .catch((err) => {
             console.error("Analytics init failed:", err);
-            // Deinit if something goes wrong to remove any partial listeners
             playerAnalytics?.deinit();
           });
       }
     }
 
+    // CLEANUP: Report stop, destroy analytics, and destroy the web player when component unmounts
     return () => {
       if (playerAnalytics) {
+        // Properly stop analytics
         playerAnalytics.reportStop();
         playerAnalytics.destroy();
       }
