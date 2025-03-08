@@ -33,6 +33,7 @@ e.g. `QUEUE_TYPE=redis npm run dev` will start a `fastify` service towards your 
 ```bash
 QUEUE_TYPE = <SQS | beanstalkd | redis>
 HEARTBEAT_INTERVAL = <heartbeat-interval>
+CORS_ORIGIN = <comma separated list of allowed origins default is to allow all>
 
 # AWS (Lambda & SQS) specifics
 AWS_REGION = <your-aws-region>
