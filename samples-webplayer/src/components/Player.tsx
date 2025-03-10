@@ -31,18 +31,18 @@ export default function Player({ src, autoplay = false }: PlayerProps) {
 
         // 4) Initialize analytics to set up your session
         playerAnalytics
-          .init({ sessionId })
+          .init({ sessionId, heartbeatInterval: 10_000 })
           .then(() => {
             // 5) Attach the analytics to the video element to automatically capture events
             playerAnalytics?.load(videoEl);
 
             playerAnalytics?.reportMetadata({
               live: false,
-              contentTitle: "Eyevinn Content Title",
+              contentTitle: "VINN promo reel",
+              contentId: "VINN-2021-01",
               contentUrl: src,
               // Additional metadata if/when you have it:
               // drmType: "",
-              // contentId: "some-content-id",
               // userId: "user-123",
               // deviceId: "device-xyz",
               // deviceModel: "...",
