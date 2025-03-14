@@ -26,7 +26,7 @@ export class Validator implements EventValidator {
     const validator = ajv.getSchema('#/definitions/TPlayerAnalyticsEvent');
     if (validator) {
       const valid = validator(event);
-      this.logger.info(`Event: \n ${JSON.stringify(event)} is ${valid ? 'valid' : 'invalid'}`);
+      this.logger.debug(`Event: \n ${JSON.stringify(event)} is ${valid ? 'valid' : 'invalid'}`);
       if (!valid) {
         this.logger.debug(validator.errors);
       }
