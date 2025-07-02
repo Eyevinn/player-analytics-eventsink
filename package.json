@@ -1,6 +1,6 @@
 {
   "name": "@eyevinn/player-analytics-eventsink",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
