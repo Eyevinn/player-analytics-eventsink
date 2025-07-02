@@ -21,7 +21,7 @@ export class Validator implements EventValidator {
       return false;
     }
 
-    const ajv = new Ajv();
+    const ajv = new Ajv({ allowUnionTypes: true });
     ajv.addSchema(this.eventSchema);
     const validator = ajv.getSchema('#/definitions/TPlayerAnalyticsEvent');
     if (validator) {
