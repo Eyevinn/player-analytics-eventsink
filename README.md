@@ -1,34 +1,22 @@
-# Eyevinn Player Analytics (EPAS) Eventsink
+[![Slack](https://slack.osaas.io/badge.svg)](https://slack.osaas.io)
+
+# Eyevinn Open Analytics Eventsink
+
+> _Part of Eyevinn Open Analytics Solution_
 
 [![Badge OSC](https://img.shields.io/badge/Evaluate-24243B?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTIiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl8yODIxXzMxNjcyKSIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI3IiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjIiLz4KPGRlZnM%2BCjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhcl8yODIxXzMxNjcyIiB4MT0iMTIiIHkxPSIwIiB4Mj0iMTIiIHkyPSIyNCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjQzE4M0ZGIi8%2BCjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzREQzlGRiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM%2BCjwvc3ZnPgo%3D)](https://app.osaas.io/browse/eyevinn-player-analytics-eventsink)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Slack](http://slack.streamingtech.se/badge.svg)](http://slack.streamingtech.se)
+Eyevinn Open Analytics is an open source solution for tracking events from video players. Based on the open standard Eyevinn Player Analytics ([EPAS](https://github.com/Eyevinn/player-analytics-specification/tree/main)) it enables a modular framework where you are not locked in with a specific vendor. This is the eventsink module that receives and validate the data from the players and push the data on to a processing quque.
 
-The Eyevinn Player Analytics (EPAS) is an open sourced framework and specification for tracking events from video players. It is a modular framework where you can pick and choose the modules you need. This is the eventsink module that receives the data from the players and push the data on to a processing queue.
+## Hosted Solution
 
-## AWS
-
-To run the eventsink in AWS as a Lambda function and SQS as processing queue:
-
-```
-// your index.js
-const { Lambda } = require("@eyevinn/player-analytics-eventsink");
-
-export const handler = Lambda.handler;
-```
-
-To use with SQS add the following environment variables to the Lambda configuration.
-
-```
-QUEUE_TYPE=SQS
-SQS_QUEUE_URL=<sqs-url>
-```
+Available as an open web service in [Eyevinn Open Source Cloud](https://www.osaas.io). Read this [documentation to quickly get started](https://docs.osaas.io/osaas.wiki/Service%3A-Player-Analytics-Eventsink.html) with the hosted solution.
 
 ## Development
 
-The simplest way to run an eventsink locally is to use the fastify service, by running `npm run dev`. This will spin up a local server at port 3000 which you can use as eventsink url in your [Eyevinn Player Analytics Client SDK](https://github.com/Eyevinn/player-analytics-client-sdk-web) project. You may as well specify your environment variables as the standard specifies.
+The simplest way to run an eventsink locally is to use the fastify service, by running `npm start`. This will spin up a local server at port 3000 which you can use as eventsink url in your [Eyevinn Player Analytics Client SDK](https://github.com/Eyevinn/player-analytics-client-sdk-web) project. You may as well specify your environment variables as the standard specifies.
 
-e.g. `QUEUE_TYPE=redis npm run dev` will start a `fastify` service towards your local `redis` as queue.
+e.g. `QUEUE_TYPE=redis npm start` will start a `fastify` service towards your local `redis` as queue.
 
 ## Environment Variables
 
