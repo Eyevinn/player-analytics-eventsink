@@ -30,7 +30,6 @@ fastify.post('/', async (request, reply) => {
     body.event === 'init'
     ? generateInitResponseBody(body)
     : generateValidResponseBody(body, resp);
-console.log(responseBody);
 reply
   .status(200)
   .headers(responseHeaders)
