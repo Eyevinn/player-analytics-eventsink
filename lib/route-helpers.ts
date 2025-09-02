@@ -5,13 +5,32 @@ import packageJson from "@eyevinn/player-analytics-specification/package.json";
 
 const epasVersion = packageJson.version;
 
-export const responseHeaders = {
+const responseHeaders = {
   'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type, Origin, X-EPAS-Event, X-EPAS-Version',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'X-EPAS-Version': epasVersion || "n/a",
 };
+
+export function generateResponseHeaders(origin?: string) {
+  if (process.env.CORS_ALLOWED_ORIGINS && origin) {
+    const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS.split(',').map(o => o.trim());
+    if (allowedOrigins.includes(origin)) {
+      return {
+        ...responseHeaders,
+        'Access-Control-Allow-Origin': origin,
+      };
+    } else {
+      return {
+        ...responseHeaders,
+      };
+    }
+  }
+  return {
+    'Access-Control-Allow-Origin': '*',
+    ...responseHeaders
+  };
+}
 
 export function generateResponseStatus({ path, method }: { path: string; method: string }): { statusCode: number; statusDescription: string } {
   const statusCode = path !== '/' ? 404 : method !== 'POST' ? 405 : 400;

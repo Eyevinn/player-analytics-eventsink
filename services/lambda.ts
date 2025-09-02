@@ -5,9 +5,9 @@ import Logger from '../logging/logger';
 import {
   generateInitResponseBody,
   generateInvalidResponseBody,
+  generateResponseHeaders,
   generateResponseStatus,
   generateValidResponseBody,
-  responseHeaders,
 } from '../lib/route-helpers';
 import { initResponseBody, responseBody } from '../types/interfaces';
 
@@ -25,7 +25,7 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
     const response = {
       statusCode: validEvent ? 200 : 400,
       statusDescription: validEvent ? 'OK' : 'Bad Request',
-      headers: responseHeaders,
+      headers: generateResponseHeaders(),
       body: '{}',
     };
     if (validEvent) {
@@ -46,7 +46,7 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
     const response = {
       statusCode: 200,
       statusDescription: 'OK',
-      headers: responseHeaders,
+      headers: generateResponseHeaders(),
       body: '{ status: "OK" }',
     };
     return response as ALBResult;
@@ -59,7 +59,7 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
   const response = {
     statusCode,
     statusDescription,
-    headers: responseHeaders,
+    headers: generateResponseHeaders(),
     body: JSON.stringify(generateInvalidResponseBody()),
   };
   return response as ALBResult;

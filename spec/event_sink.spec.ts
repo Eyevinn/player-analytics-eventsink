@@ -3,6 +3,7 @@ import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 import { mockClient } from 'aws-sdk-client-mock';
 import { valid_events, invalid_events } from './events/test_events';
 import { SqsQueueAdapter } from '@eyevinn/player-analytics-shared';
+import { generateResponseHeaders } from '../lib/route-helpers';
 
 const sqsMock = mockClient(SQSClient);
 let request: any;
@@ -33,6 +34,37 @@ describe('event-sink module', () => {
     process.env.QUEUE_TYPE = 'SQS';
     process.env.SQS_QUEUE_URL = 'https://sqs.us-east-1.amazonaws.com/1234/test-queue';
     sqsMock.reset();
+  });
+
+  it('can generate valid response headers', () => {
+    const responseHeaders = generateResponseHeaders();
+    expect(responseHeaders['Content-Type']).toEqual('application/json');
+    expect(responseHeaders['Access-Control-Allow-Origin']).toEqual('*');
+    expect(responseHeaders['Access-Control-Allow-Headers']).toEqual('Content-Type, Origin, X-EPAS-Event, X-EPAS-Version');
+    expect(responseHeaders['Access-Control-Allow-Methods']).toEqual('POST, OPTIONS');
+    expect(responseHeaders['X-EPAS-Version']).not.toBeNull();
+
+    const responseHeadersWithOrigin = generateResponseHeaders('https://example.com');
+    expect(responseHeadersWithOrigin['Content-Type']).toEqual('application/json');
+    expect(responseHeadersWithOrigin['Access-Control-Allow-Origin']).toEqual('*');
+    expect(responseHeadersWithOrigin['Access-Control-Allow-Headers']).toEqual('Content-Type, Origin, X-EPAS-Event, X-EPAS-Version');
+    expect(responseHeadersWithOrigin['Access-Control-Allow-Methods']).toEqual('POST, OPTIONS');
+    expect(responseHeadersWithOrigin['X-EPAS-Version']).not.toBeNull();
+
+    process.env.CORS_ALLOWED_ORIGINS = 'https://example.com, https://mydomain.com';
+    const responseHeadersWithAllowedOrigin = generateResponseHeaders('https://mydomain.com');
+    expect(responseHeadersWithAllowedOrigin['Content-Type']).toEqual('application/json');
+    expect(responseHeadersWithAllowedOrigin['Access-Control-Allow-Origin']).toEqual('https://mydomain.com');
+    expect(responseHeadersWithAllowedOrigin['Access-Control-Allow-Headers']).toEqual('Content-Type, Origin, X-EPAS-Event, X-EPAS-Version');
+    expect(responseHeadersWithAllowedOrigin['Access-Control-Allow-Methods']).toEqual('POST, OPTIONS');
+    expect(responseHeadersWithAllowedOrigin['X-EPAS-Version']).not.toBeNull();
+
+    const responseHeadersWithNotAllowedOrigin = generateResponseHeaders('https://notallowed.com');
+    expect(responseHeadersWithNotAllowedOrigin['Content-Type']).toEqual('application/json');
+    expect(responseHeadersWithNotAllowedOrigin['Access-Control-Allow-Origin']).not.toBeDefined();
+    expect(responseHeadersWithNotAllowedOrigin['Access-Control-Allow-Headers']).toEqual('Content-Type, Origin, X-EPAS-Event, X-EPAS-Version');
+    expect(responseHeadersWithNotAllowedOrigin['Access-Control-Allow-Methods']).toEqual('POST, OPTIONS');
+    expect(responseHeadersWithNotAllowedOrigin['X-EPAS-Version']).not.toBeNull();
   });
 
   it('can validate an incoming POST request with a valid payload and push it to SQS', async () => {
