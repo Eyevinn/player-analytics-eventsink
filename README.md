@@ -21,18 +21,19 @@ e.g. `QUEUE_TYPE=redis npm start` will start a `fastify` service towards your lo
 ## Environment Variables
 
 ```bash
-QUEUE_TYPE = <SQS | beanstalkd | redis>
-HEARTBEAT_INTERVAL = <heartbeat-interval>
+QUEUE_TYPE = "<SQS | beanstalkd | redis>"
+HEARTBEAT_INTERVAL = "<heartbeat-interval>"
+CORS_ALLOWED_ORIGINS = "<comma-separated-list-of-origins-to-allow>"
 
 # AWS (Lambda & SQS) specifics
-AWS_REGION = <your-aws-region>
+AWS_REGION = "<your-aws-region>"
 # SQS specifics
-SQS_QUEUE_URL = <your-sqs-queue-url>
+SQS_QUEUE_URL = "<your-sqs-queue-url>"
 
 # Redis specifics
-REDIS_HOST = <default localhost>
-REDIS_PORT = <default 6379>
-REDIS_PASSWORD = <default empty>
+REDIS_HOST = "<default localhost>"
+REDIS_PORT = "<default 6379>"
+REDIS_PASSWORD = "<default empty>"
 ```
 
 # About Eyevinn Technology

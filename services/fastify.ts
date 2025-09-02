@@ -1,5 +1,5 @@
 import { Validator } from '../lib/Validator';
-import { generateInitResponseBody, generateInvalidResponseBody, generateResponseStatus, generateValidResponseBody, responseHeaders } from "../lib/route-helpers";
+import { generateInitResponseBody, generateInvalidResponseBody, generateResponseHeaders, generateResponseStatus, generateValidResponseBody } from "../lib/route-helpers";
 import Sender from '../lib/Sender';
 import Logger from '../logging/logger';
 import { initResponseBody, responseBody } from '../types/interfaces';
@@ -10,7 +10,7 @@ const validator = new Validator(Logger);
 fastify.options('/', (request, reply) => {
   reply
     .status(200)
-    .headers(responseHeaders)
+    .headers(generateResponseHeaders(request.headers.origin))
     .send({ status: "ok" });
 });
 
@@ -32,12 +32,12 @@ fastify.post('/', async (request, reply) => {
     : generateValidResponseBody(body, resp);
 reply
   .status(200)
-  .headers(responseHeaders)
+  .headers(generateResponseHeaders(request.headers.origin))
   .send(responseBody);
 } else {
   reply
     .status(400)
-    .headers(responseHeaders)
+    .headers(generateResponseHeaders(request.headers.origin))
     .send(generateInvalidResponseBody(body));
 }
 });
@@ -47,7 +47,7 @@ fastify.route({
   url: '/*',
   handler: (request, reply) => {
     const { statusCode, statusDescription } = generateResponseStatus({ path: request.url, method: request.method });
-    reply.status(statusCode).headers(responseHeaders).send(statusDescription);
+    reply.status(statusCode).headers(generateResponseHeaders(request.headers.origin)).send(statusDescription);
   },
 });
 
