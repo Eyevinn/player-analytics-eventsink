@@ -37,6 +37,7 @@ describe('event-sink module', () => {
   });
 
   it('can generate valid response headers', () => {
+    process.env.CORS_ALLOWED_ORIGINS = '';
     const responseHeaders = generateResponseHeaders();
     expect(responseHeaders['Content-Type']).toEqual('application/json');
     expect(responseHeaders['Access-Control-Allow-Origin']).toEqual('*');
@@ -65,6 +66,7 @@ describe('event-sink module', () => {
     expect(responseHeadersWithNotAllowedOrigin['Access-Control-Allow-Headers']).toEqual('Content-Type, Origin, X-EPAS-Event, X-EPAS-Version');
     expect(responseHeadersWithNotAllowedOrigin['Access-Control-Allow-Methods']).toEqual('POST, OPTIONS');
     expect(responseHeadersWithNotAllowedOrigin['X-EPAS-Version']).not.toBeNull();
+    process.env.CORS_ALLOWED_ORIGINS = '';
   });
 
   it('can validate an incoming POST request with a valid payload and push it to SQS', async () => {

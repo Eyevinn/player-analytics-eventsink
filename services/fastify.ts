@@ -4,7 +4,7 @@ import Sender from '../lib/Sender';
 import Logger from '../logging/logger';
 import { initResponseBody, responseBody } from '../types/interfaces';
 
-const fastify = require('fastify')()
+export const fastify = require('fastify')()
 const validator = new Validator(Logger);
 
 fastify.options('/', (request, reply) => {
