@@ -69,7 +69,16 @@ export default class Sender {
       const queue = await this.getQueueAdapter(queueType);
       const queueTs = Date.now();
       const queueResponse = await queue.pushToQueue(event);
-      this.logger.debug(`Time taken to run "await queue.pushToQueue(event)"-> ${Date.now() - queueTs}ms`);
+      const timeTaken = Date.now() - queueTs;
+      
+      this.logger.debug(`Time taken to run "await queue.pushToQueue(event)"-> ${timeTaken}ms`);
+      
+      if (timeTaken > 5000) {
+        this.logger.error(`Queue operation took ${timeTaken}ms (> 5 seconds) - this indicates a serious performance issue`);
+      } else if (timeTaken > 2000) {
+        this.logger.warn(`Queue operation took ${timeTaken}ms (> 2 seconds) - performance may be degraded`);
+      }
+      
       return queueResponse;
     } catch (error) {
       this.logger.error('Error getting queue adapter:', error);
