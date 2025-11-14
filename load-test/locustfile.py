@@ -16,12 +16,16 @@ class EventSinkUser(HttpUser):
         
     def get_base_event(self):
         """Get base event structure"""
-        return {
+        base_event = {
             "sessionId": self.session_id,
             "timestamp": int(time.time() * 1000),
             "playhead": self.playhead_position,
             "duration": self.content_duration
         }
+        # Optionally add shardId for some events (supported but not required)
+        if random.random() < 0.3:  # 30% of events include shardId
+            base_event["shardId"] = f"shard-{random.randint(1, 5)}"
+        return base_event
     
     @task(1)
     def send_init_event(self):
@@ -131,7 +135,11 @@ class EventSinkUser(HttpUser):
             event.update({
                 "event": "bitrate_changed",
                 "payload": {
-                    "bitrate": random.choice([500000, 1000000, 2000000, 4000000, 8000000])
+                    "bitrate": random.choice([500000, 1000000, 2000000, 4000000, 8000000]),
+                    "width": random.choice([1280, 1920, 3840]),
+                    "height": random.choice([720, 1080, 2160]),
+                    "videoBitrate": random.choice([400000, 800000, 2000000, 6000000]),
+                    "audioBitrate": random.choice([128000, 256000, 320000])
                 }
             })
             
@@ -149,8 +157,10 @@ class EventSinkUser(HttpUser):
             event.update({
                 "event": "error",
                 "payload": {
-                    "errorCode": random.choice([404, 500, 503]),
-                    "errorMessage": random.choice(["Network error", "Playback failed", "Server error"])
+                    "category": random.choice(["NETWORK", "DECODER", "PLAYER", "DRM"]),
+                    "code": str(random.choice([404, 500, 503, 1001, 1002])),
+                    "message": random.choice(["Network error", "Playback failed", "Server error", "Decoder error"]),
+                    "data": {}
                 }
             })
             
@@ -168,8 +178,10 @@ class EventSinkUser(HttpUser):
             event.update({
                 "event": "warning",
                 "payload": {
-                    "warningCode": random.choice([100, 200, 300]),
-                    "warningMessage": random.choice(["Low bandwidth", "Buffer underrun", "Quality degraded"])
+                    "category": random.choice(["NETWORK", "PLAYER", "QUALITY"]),
+                    "code": str(random.choice([100, 200, 300, 2001, 2002])),
+                    "message": random.choice(["Low bandwidth", "Buffer underrun", "Quality degraded"]),
+                    "data": {}
                 }
             })
             
@@ -184,7 +196,12 @@ class EventSinkUser(HttpUser):
         """Send stopped event - end of session"""
         if self.initialized and random.random() < 0.1:  # 10% chance
             event = self.get_base_event()
-            event["event"] = "stopped"
+            event.update({
+                "event": "stopped",
+                "payload": {
+                    "reason": random.choice(["ended", "aborted", "error", "user_action"])
+                }
+            })
             
             with self.client.post("/", json=event, catch_response=True) as response:
                 if response.status_code == 200:
