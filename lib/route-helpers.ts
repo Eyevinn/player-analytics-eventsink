@@ -69,3 +69,26 @@ export function generateInitResponseBody(event: Record<string, any>): initRespon
     heartbeatInterval: event.heartbeatInterval || process.env.HEARTBEAT_INTERVAL || 5000,
   };
 }
+
+export function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error('Operation timed out'));
+    }, timeoutMs);
+
+    promise
+      .then((result) => {
+        clearTimeout(timeoutId);
+        resolve(result);
+      })
+      .catch((error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      });
+  });
+}
+
+export function getTimeoutMs(): number {
+  const envTimeout = process.env.SEND_TIMEOUT_MS;
+  return envTimeout ? parseInt(envTimeout, 10) : 3000;
+}
