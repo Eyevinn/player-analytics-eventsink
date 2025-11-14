@@ -24,7 +24,7 @@ class EventSinkUser(HttpUser):
         }
         # Optionally add shardId for some events (supported but not required)
         if random.random() < 0.3:  # 30% of events include shardId
-            base_event["shardId"] = f"shard-{random.randint(1, 5)}"
+            base_event["shardId"] = f"shard{random.randint(1, 5)}"
         return base_event
     
     @task(1)
