@@ -8,11 +8,15 @@ import {
   generateResponseHeaders,
   generateResponseStatus,
   generateValidResponseBody,
+  withTimeout,
+  getTimeoutMs,
 } from '../lib/route-helpers';
 import { initResponseBody, responseBody } from '../types/interfaces';
 
+const validator = new Validator(Logger);
+const sender = new Sender(Logger);
+
 export const handler = async (event: ALBEvent): Promise<ALBResult> => {
-  const validator = new Validator(Logger);
   if (event.httpMethod === 'POST' && event.path === '/' && event['body']) {
     let requestHost: string = 'unknown';
     if (event.headers && event.headers['host']) {
@@ -29,14 +33,24 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
       body: '{}',
     };
     if (validEvent) {
-      const sender = new Sender(Logger);
       body.host = requestHost;
       const senderTs = Date.now();
-      const resp = await sender.send(body);
-      Logger.debug(`Time taken to send event to Queue-> ${Date.now() - senderTs}ms`);
-      const responseBody: initResponseBody | responseBody =
-        body.event === 'init' ? generateInitResponseBody(body) : generateValidResponseBody(body, resp);
-      response.body = JSON.stringify(responseBody);
+      try {
+        const resp = await withTimeout(sender.send(body), getTimeoutMs());
+        Logger.debug(`Time taken to send event to Queue-> ${Date.now() - senderTs}ms`);
+        const responseBody: initResponseBody | responseBody =
+          body.event === 'init' ? generateInitResponseBody(body) : generateValidResponseBody(body, resp);
+        response.body = JSON.stringify(responseBody);
+      } catch (error) {
+        Logger.error('Sender timeout or error:', error);
+        response.statusCode = 502;
+        response.statusDescription = 'Bad Gateway';
+        response.body = JSON.stringify({
+          sessionId: body.sessionId || -1,
+          message: error.message === 'Operation timed out' ? 'Request timeout' : 'Queue service unavailable',
+          valid: false,
+        });
+      }
     } else {
       response.body = JSON.stringify(generateInvalidResponseBody(body));
     }

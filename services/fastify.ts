@@ -1,11 +1,12 @@
 import { Validator } from '../lib/Validator';
-import { generateInitResponseBody, generateInvalidResponseBody, generateResponseHeaders, generateResponseStatus, generateValidResponseBody } from "../lib/route-helpers";
+import { generateInitResponseBody, generateInvalidResponseBody, generateResponseHeaders, generateResponseStatus, generateValidResponseBody, withTimeout, getTimeoutMs } from "../lib/route-helpers";
 import Sender from '../lib/Sender';
 import Logger from '../logging/logger';
 import { initResponseBody, responseBody } from '../types/interfaces';
 
 export const fastify = require('fastify')()
 const validator = new Validator(Logger);
+const sender = new Sender(Logger);
 
 fastify.options('/', (request, reply) => {
   reply
@@ -22,18 +23,29 @@ fastify.post('/', async (request, reply) => {
   const validEvent = validator.validateEvent(body);
   Logger.debug(`Time taken to validate event-> ${Date.now() - validatorTs}ms`);
   if (validEvent) {
-    let sender = new Sender(Logger);
     const senderTs = Date.now();
-    const resp = await sender.send(body);
-    Logger.debug(`Time taken to send event to Queue-> ${Date.now() - senderTs}ms`);
-    const responseBody: initResponseBody | responseBody =
-    body.event === 'init'
-    ? generateInitResponseBody(body)
-    : generateValidResponseBody(body, resp);
-reply
-  .status(200)
-  .headers(generateResponseHeaders(request.headers.origin))
-  .send(responseBody);
+    try {
+      const resp = await withTimeout(sender.send(body), getTimeoutMs());
+      Logger.debug(`Time taken to send event to Queue-> ${Date.now() - senderTs}ms`);
+      const responseBody: initResponseBody | responseBody =
+      body.event === 'init'
+      ? generateInitResponseBody(body)
+      : generateValidResponseBody(body, resp);
+  reply
+    .status(200)
+    .headers(generateResponseHeaders(request.headers.origin))
+    .send(responseBody);
+  } catch (error) {
+    Logger.error('Sender timeout or error:', error);
+    reply
+      .status(502)
+      .headers(generateResponseHeaders(request.headers.origin))
+      .send({
+        sessionId: body.sessionId || -1,
+        message: error.message === 'Operation timed out' ? 'Request timeout' : 'Queue service unavailable',
+        valid: false,
+      });
+  }
 } else {
   reply
     .status(400)
