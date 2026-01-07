@@ -38,7 +38,8 @@ export default class Sender {
     switch (queueType) {
       case 'SQS':
         QueueAdapter = (await import('@eyevinn/player-analytics-shared')).SqsQueueAdapter;
-        break;
+        const maxSockets = process.env.SQS_MAX_SOCKETS ? parseInt(process.env.SQS_MAX_SOCKETS, 10) : undefined;
+        return new QueueAdapter(this.logger, { maxSockets });
       case 'beanstalkd':
         QueueAdapter = (await import('@eyevinn/player-analytics-shared')).BeanstalkdAdapter;
         break;
