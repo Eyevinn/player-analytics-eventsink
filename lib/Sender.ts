@@ -76,13 +76,7 @@ export default class Sender {
     this.memoryQueue = new MemoryQueue(this.logger, options);
     
     this.memoryQueue.on('drainEvent', async (queuedEvent) => {
-      try {
-        await this.sendToActualQueue(queuedEvent.event);
-        this.logger.debug(`Successfully drained event ${queuedEvent.id} from memory queue`);
-      } catch (error) {
-        this.logger.error(`Failed to drain event ${queuedEvent.id}:`, error);
-        throw error;
-      }
+      return this.sendToActualQueue(queuedEvent.event);
     });
 
     this.memoryQueue.on('eventDropped', (queuedEvent) => {

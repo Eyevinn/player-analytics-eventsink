@@ -133,35 +133,46 @@ export default class MemoryQueue extends EventEmitter {
         await this.delay(this.currentDelayMs);
       }
       
-      try {
-        const startTime = Date.now();
-        const drainPromise = this.drainSingleEvent(queuedEvent);
-        this.activeDrainPromises.add(drainPromise);
-        
-        await drainPromise;
-        
-        const responseTime = Date.now() - startTime;
-        this.recordResponseTime(responseTime);
-        this.adjustThrottling(responseTime);
-        
-      } catch (error) {
-        this.logger.error(`Failed to drain event ${queuedEvent.id}:`, error);
-        this.handleEventFailure(queuedEvent);
-        this.adjustThrottlingForError();
-      }
+      // Start the drain operation but don't wait for it - fire and forget
+      this.drainSingleEventAsync(queuedEvent);
     }
   }
 
-  private async drainSingleEvent(queuedEvent: QueuedEvent): Promise<void> {
-    const drainPromise = (async () => {
-      await this.emit('drainEvent', queuedEvent);
-    })();
+  private drainSingleEventAsync(queuedEvent: QueuedEvent): void {
+    const startTime = Date.now();
     
-    try {
-      await drainPromise;
-    } finally {
-      this.activeDrainPromises.delete(drainPromise);
+    // Create the drain promise but don't await it in the main flow
+    const drainPromise = this.executeDrainEvent(queuedEvent);
+    this.activeDrainPromises.add(drainPromise);
+    
+    // Handle completion asynchronously
+    drainPromise
+      .then(() => {
+        const responseTime = Date.now() - startTime;
+        this.recordResponseTime(responseTime);
+        this.adjustThrottling(responseTime);
+        this.logger.debug(`Successfully drained event ${queuedEvent.id} from memory queue`);
+      })
+      .catch((error) => {
+        this.logger.error(`Failed to drain event ${queuedEvent.id}:`, error);
+        this.handleEventFailure(queuedEvent);
+        this.adjustThrottlingForError();
+      })
+      .finally(() => {
+        this.activeDrainPromises.delete(drainPromise);
+      });
+  }
+
+  private async executeDrainEvent(queuedEvent: QueuedEvent): Promise<void> {
+    // Create a promise that resolves when the event listener completes
+    const listeners = this.listeners('drainEvent');
+    if (listeners.length === 0) {
+      return Promise.resolve();
     }
+    
+    // Execute the first listener (should be the Sender's handler)
+    const listener = listeners[0] as (queuedEvent: QueuedEvent) => Promise<void>;
+    return listener(queuedEvent);
   }
 
   private delay(ms: number): Promise<void> {
