@@ -120,4 +120,36 @@ describe('Memory Queue Integration', () => {
     delete process.env.MEMORY_QUEUE_BATCH_SIZE;
     delete process.env.MEMORY_QUEUE_DRAIN_INTERVAL;
   });
+
+  it('should handle throttling configuration via environment variables', () => {
+    process.env.MEMORY_QUEUE_EVENT_DELAY_MS = '25';
+    process.env.MEMORY_QUEUE_MAX_CONCURRENT = '3';
+    process.env.MEMORY_QUEUE_ADAPTIVE_THROTTLING = 'false';
+    
+    sender = new Sender(logger);
+    
+    const stats = sender.getMemoryQueueStats();
+    expect(stats!.baseThrottleDelayMs).toBe(25);
+    expect(stats!.maxConcurrentOperations).toBe(3);
+    expect(stats!.adaptiveThrottling).toBe(false);
+    
+    // Clean up custom env vars
+    delete process.env.MEMORY_QUEUE_EVENT_DELAY_MS;
+    delete process.env.MEMORY_QUEUE_MAX_CONCURRENT;
+    delete process.env.MEMORY_QUEUE_ADAPTIVE_THROTTLING;
+  });
+
+  it('should include throttling information in stats', () => {
+    sender = new Sender(logger);
+    
+    const stats = sender.getMemoryQueueStats();
+    expect(stats).toEqual(jasmine.objectContaining({
+      currentThrottleDelayMs: jasmine.any(Number),
+      baseThrottleDelayMs: jasmine.any(Number),
+      maxConcurrentOperations: jasmine.any(Number),
+      activeConcurrentOperations: jasmine.any(Number),
+      averageResponseTimeMs: jasmine.any(Number),
+      adaptiveThrottling: jasmine.any(Boolean)
+    }));
+  });
 });
