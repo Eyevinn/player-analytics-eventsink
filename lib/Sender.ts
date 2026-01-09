@@ -1,12 +1,20 @@
 import winston from 'winston';
+import MemoryQueue from './MemoryQueue';
 
 export default class Sender {
   logger: winston.Logger;
   private static queueAdapterCache: Map<string, any> = new Map();
   private static queueAdapterPromises: Map<string, Promise<any>> = new Map();
+  private memoryQueue?: MemoryQueue;
+  private useMemoryQueue: boolean;
 
   constructor(logger: winston.Logger) {
     this.logger = logger;
+    this.useMemoryQueue = process.env.DISABLE_MEMORY_QUEUE !== 'true';
+    
+    if (this.useMemoryQueue) {
+      this.initializeMemoryQueue();
+    }
   }
 
   private async getQueueAdapter(queueType: string): Promise<any> {
@@ -53,12 +61,39 @@ export default class Sender {
     return new QueueAdapter(this.logger);
   }
 
-  /**
-   *
-   * @param event the event object to send
-   * @returns an object with the response from the event sender or an empty object if there was an error
-   */
-  async send(event: Object): Promise<Object> {
+  private initializeMemoryQueue(): void {
+    const options = {
+      maxSize: process.env.MEMORY_QUEUE_MAX_SIZE ? parseInt(process.env.MEMORY_QUEUE_MAX_SIZE, 10) : 10000,
+      batchSize: process.env.MEMORY_QUEUE_BATCH_SIZE ? parseInt(process.env.MEMORY_QUEUE_BATCH_SIZE, 10) : 100,
+      drainInterval: process.env.MEMORY_QUEUE_DRAIN_INTERVAL ? parseInt(process.env.MEMORY_QUEUE_DRAIN_INTERVAL, 10) : 1000,
+      maxRetries: process.env.MEMORY_QUEUE_MAX_RETRIES ? parseInt(process.env.MEMORY_QUEUE_MAX_RETRIES, 10) : 3,
+      onOverflow: (process.env.MEMORY_QUEUE_OVERFLOW_STRATEGY as 'drop-oldest' | 'drop-newest' | 'reject') || 'drop-oldest'
+    };
+
+    this.memoryQueue = new MemoryQueue(this.logger, options);
+    
+    this.memoryQueue.on('drainEvent', async (queuedEvent) => {
+      try {
+        await this.sendToActualQueue(queuedEvent.event);
+        this.logger.debug(`Successfully drained event ${queuedEvent.id} from memory queue`);
+      } catch (error) {
+        this.logger.error(`Failed to drain event ${queuedEvent.id}:`, error);
+        throw error;
+      }
+    });
+
+    this.memoryQueue.on('eventDropped', (queuedEvent) => {
+      this.logger.warn(`Event ${queuedEvent.id} was dropped from memory queue due to overflow`);
+    });
+
+    this.memoryQueue.on('eventFailed', (queuedEvent) => {
+      this.logger.error(`Event ${queuedEvent.id} permanently failed after all retries`);
+    });
+
+    this.logger.info('Memory queue initialized and background processor started');
+  }
+
+  private async sendToActualQueue(event: Object): Promise<Object> {
     const queueType = process.env.QUEUE_TYPE;
     
     if (!queueType) {
@@ -84,6 +119,52 @@ export default class Sender {
     } catch (error) {
       this.logger.error('Error getting queue adapter:', error);
       return { message: error.message };
+    }
+  }
+
+  /**
+   *
+   * @param event the event object to send
+   * @returns an object with the response from the event sender or an empty object if there was an error
+   */
+  async send(event: Object): Promise<Object> {
+    if (this.useMemoryQueue && this.memoryQueue) {
+      try {
+        const result = this.memoryQueue.enqueue(event);
+        if (result.success) {
+          this.logger.debug(`Event ${result.id} added to memory queue, size: ${this.memoryQueue.size()}`);
+          return { 
+            message: 'Event queued for processing',
+            memoryQueueId: result.id,
+            queueSize: this.memoryQueue.size()
+          };
+        } else {
+          this.logger.error(`Failed to add event to memory queue: ${result.error}`);
+          return { message: result.error || 'Failed to queue event' };
+        }
+      } catch (error) {
+        this.logger.error('Memory queue error, falling back to direct send:', error);
+        return await this.sendToActualQueue(event);
+      }
+    } else {
+      return await this.sendToActualQueue(event);
+    }
+  }
+
+  getMemoryQueueStats() {
+    return this.memoryQueue?.getStats() || null;
+  }
+
+  async flushMemoryQueue(): Promise<void> {
+    if (this.memoryQueue) {
+      await this.memoryQueue.flush();
+    }
+  }
+
+  destroy(): void {
+    if (this.memoryQueue) {
+      this.memoryQueue.destroy();
+      this.memoryQueue = undefined;
     }
   }
 }

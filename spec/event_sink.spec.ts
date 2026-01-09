@@ -1,3 +1,6 @@
+// Disable memory queue before any imports to ensure it's set during module initialization
+process.env.DISABLE_MEMORY_QUEUE = 'true';
+
 import { Lambda } from '../index';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 import { mockClient } from 'aws-sdk-client-mock';
@@ -35,6 +38,7 @@ describe('event-sink module', () => {
     process.env.SQS_QUEUE_URL = 'https://sqs.us-east-1.amazonaws.com/1234/test-queue';
     sqsMock.reset();
   });
+
 
   it('can generate valid response headers', () => {
     process.env.CORS_ALLOWED_ORIGINS = '';
