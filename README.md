@@ -25,6 +25,9 @@ QUEUE_TYPE = "<SQS | beanstalkd | redis>"
 HEARTBEAT_INTERVAL = "<heartbeat-interval>"
 CORS_ALLOWED_ORIGINS = "<comma-separated-list-of-origins-to-allow>"
 
+# Memory Queue (enabled by default for improved performance)
+DISABLE_MEMORY_QUEUE = "<true to disable, false or unset for enabled>"
+
 # AWS (Lambda & SQS) specifics
 AWS_REGION = "<your-aws-region>"
 # SQS specifics
@@ -35,6 +38,12 @@ REDIS_HOST = "<default localhost>"
 REDIS_PORT = "<default 6379>"
 REDIS_PASSWORD = "<default empty>"
 ```
+
+## Memory Queue
+
+The eventsink includes a **memory queue feature enabled by default** that provides immediate responses to clients while processing events in the background. This reduces load on the primary queue system and improves response times.
+
+For detailed configuration options and usage information, see [Memory Queue Documentation](MEMORY_QUEUE.md).
 
 # About Eyevinn Technology
 

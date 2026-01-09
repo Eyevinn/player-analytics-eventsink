@@ -36,11 +36,21 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
       body.host = requestHost;
       const senderTs = Date.now();
       try {
-        const resp = await withTimeout(sender.send(body), getTimeoutMs());
-        Logger.debug(`Time taken to send event to Queue-> ${Date.now() - senderTs}ms`);
-        const responseBody: initResponseBody | responseBody =
-          body.event === 'init' ? generateInitResponseBody(body) : generateValidResponseBody(body, resp);
-        response.body = JSON.stringify(responseBody);
+        const useMemoryQueue = process.env.DISABLE_MEMORY_QUEUE !== 'true';
+        
+        if (useMemoryQueue) {
+          const resp = await sender.send(body);
+          Logger.debug(`Time taken to queue event in memory-> ${Date.now() - senderTs}ms`);
+          const responseBody: initResponseBody | responseBody =
+            body.event === 'init' ? generateInitResponseBody(body) : generateValidResponseBody(body, resp);
+          response.body = JSON.stringify(responseBody);
+        } else {
+          const resp = await withTimeout(sender.send(body), getTimeoutMs());
+          Logger.debug(`Time taken to send event to Queue-> ${Date.now() - senderTs}ms`);
+          const responseBody: initResponseBody | responseBody =
+            body.event === 'init' ? generateInitResponseBody(body) : generateValidResponseBody(body, resp);
+          response.body = JSON.stringify(responseBody);
+        }
       } catch (error) {
         Logger.error('Sender timeout or error:', error);
         response.statusCode = 502;
