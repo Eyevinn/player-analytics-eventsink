@@ -34,8 +34,8 @@ export default class MemoryQueue extends EventEmitter {
     super();
     this.logger = logger;
     this.options = {
-      maxSize: options.maxSize ?? 10000,
-      batchSize: options.batchSize ?? 100,
+      maxSize: options.maxSize ?? 20000,
+      batchSize: options.batchSize ?? 50,
       drainInterval: options.drainInterval ?? 1000,
       maxRetries: options.maxRetries ?? 3,
       onOverflow: options.onOverflow ?? 'drop-oldest',
@@ -198,12 +198,12 @@ export default class MemoryQueue extends EventEmitter {
     // If response times are high, increase delay
     if (avgResponseTime > 1000) { // 1 second
       this.currentDelayMs = Math.min(this.currentDelayMs + 5, 100); // Max 100ms delay
-      this.logger.debug(`Increased throttling delay to ${this.currentDelayMs}ms due to high response time: ${avgResponseTime}ms`);
+      this.logger.info(`Increased throttling delay to ${this.currentDelayMs}ms due to high response time: ${avgResponseTime}ms`);
     } 
     // If response times are good, decrease delay
     else if (avgResponseTime < 200 && this.currentDelayMs > this.options.eventDelayMs) {
       this.currentDelayMs = Math.max(this.currentDelayMs - 2, this.options.eventDelayMs);
-      this.logger.debug(`Decreased throttling delay to ${this.currentDelayMs}ms due to good response time: ${avgResponseTime}ms`);
+      this.logger.info(`Decreased throttling delay to ${this.currentDelayMs}ms due to good response time: ${avgResponseTime}ms`);
     }
   }
 
@@ -214,7 +214,7 @@ export default class MemoryQueue extends EventEmitter {
 
     // Increase delay significantly on errors to reduce stress
     this.currentDelayMs = Math.min(this.currentDelayMs + 20, 200); // Max 200ms delay on errors
-    this.logger.debug(`Increased throttling delay to ${this.currentDelayMs}ms due to error`);
+    this.logger.info(`Increased throttling delay to ${this.currentDelayMs}ms due to error`);
   }
 
   private handleBatchFailure(batch: QueuedEvent[]): void {
