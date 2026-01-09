@@ -148,4 +148,69 @@ describe('MemoryQueue', () => {
     expect(memoryQueue.size()).toBe(0);
     expect(processedCount).toBe(3);
   });
+
+  it('should respect concurrent operation limits', (done) => {
+    memoryQueue = new MemoryQueue(logger, {
+      maxSize: 100,
+      batchSize: 5,
+      drainInterval: 10,
+      maxConcurrentEvents: 2,
+      eventDelayMs: 50
+    });
+
+    let concurrentCount = 0;
+    let maxConcurrent = 0;
+
+    memoryQueue.on('drainEvent', async () => {
+      concurrentCount++;
+      maxConcurrent = Math.max(maxConcurrent, concurrentCount);
+      
+      // Simulate processing time
+      await new Promise(resolve => setTimeout(resolve, 20));
+      
+      concurrentCount--;
+      
+      if (concurrentCount === 0 && maxConcurrent > 0) {
+        expect(maxConcurrent).toBeLessThanOrEqual(2);
+        done();
+      }
+    });
+
+    // Add multiple events
+    for (let i = 0; i < 5; i++) {
+      memoryQueue.enqueue({ type: 'test', data: `event-${i}` });
+    }
+  });
+
+  it('should include throttling stats', () => {
+    memoryQueue = new MemoryQueue(logger, {
+      maxSize: 100,
+      eventDelayMs: 20,
+      adaptiveThrottling: true,
+      maxConcurrentEvents: 3
+    });
+
+    const stats = memoryQueue.getStats();
+    
+    expect(stats.currentThrottleDelayMs).toBeDefined();
+    expect(stats.baseThrottleDelayMs).toBe(20);
+    expect(stats.maxConcurrentOperations).toBe(3);
+    expect(stats.adaptiveThrottling).toBe(true);
+    expect(stats.averageResponseTimeMs).toBeDefined();
+    expect(stats.activeConcurrentOperations).toBeDefined();
+  });
+
+  it('should handle throttling configuration', () => {
+    memoryQueue = new MemoryQueue(logger, {
+      maxSize: 100,
+      eventDelayMs: 15,
+      adaptiveThrottling: false,
+      maxConcurrentEvents: 10
+    });
+
+    const stats = memoryQueue.getStats();
+    expect(stats.baseThrottleDelayMs).toBe(15);
+    expect(stats.maxConcurrentOperations).toBe(10);
+    expect(stats.adaptiveThrottling).toBe(false);
+  });
 });

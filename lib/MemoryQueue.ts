@@ -14,6 +14,9 @@ interface MemoryQueueOptions {
   drainInterval?: number;
   maxRetries?: number;
   onOverflow?: 'drop-oldest' | 'drop-newest' | 'reject';
+  eventDelayMs?: number;
+  adaptiveThrottling?: boolean;
+  maxConcurrentEvents?: number;
 }
 
 export default class MemoryQueue extends EventEmitter {
@@ -23,6 +26,9 @@ export default class MemoryQueue extends EventEmitter {
   private drainTimer?: NodeJS.Timeout;
   private isProcessing = false;
   private nextId = 1;
+  private activeDrainPromises = new Set<Promise<void>>();
+  private recentResponseTimes: number[] = [];
+  private currentDelayMs = 0;
 
   constructor(logger: winston.Logger, options: MemoryQueueOptions = {}) {
     super();
@@ -32,8 +38,13 @@ export default class MemoryQueue extends EventEmitter {
       batchSize: options.batchSize ?? 100,
       drainInterval: options.drainInterval ?? 1000,
       maxRetries: options.maxRetries ?? 3,
-      onOverflow: options.onOverflow ?? 'drop-oldest'
+      onOverflow: options.onOverflow ?? 'drop-oldest',
+      eventDelayMs: options.eventDelayMs ?? 10,
+      adaptiveThrottling: options.adaptiveThrottling ?? true,
+      maxConcurrentEvents: options.maxConcurrentEvents ?? 5
     };
+    
+    this.currentDelayMs = this.options.eventDelayMs;
     
     this.startDrainTimer();
   }
@@ -91,14 +102,20 @@ export default class MemoryQueue extends EventEmitter {
       return;
     }
 
+    // Check concurrent processing limit
+    if (this.activeDrainPromises.size >= this.options.maxConcurrentEvents) {
+      this.logger.debug(`Skipping batch processing: ${this.activeDrainPromises.size} concurrent operations active`);
+      return;
+    }
+
     this.isProcessing = true;
     const batchSize = Math.min(this.options.batchSize, this.queue.length);
     const batch = this.queue.splice(0, batchSize);
 
-    this.logger.debug(`Processing batch of ${batch.length} events, ${this.queue.length} remaining in queue`);
+    this.logger.debug(`Processing batch of ${batch.length} events, ${this.queue.length} remaining in queue, current delay: ${this.currentDelayMs}ms`);
 
     try {
-      await this.processBatchEvents(batch);
+      await this.processBatchEventsWithThrottling(batch);
     } catch (error) {
       this.logger.error('Error processing batch:', error);
       this.handleBatchFailure(batch);
@@ -107,15 +124,86 @@ export default class MemoryQueue extends EventEmitter {
     }
   }
 
-  private async processBatchEvents(batch: QueuedEvent[]): Promise<void> {
-    for (const queuedEvent of batch) {
+  private async processBatchEventsWithThrottling(batch: QueuedEvent[]): Promise<void> {
+    for (let i = 0; i < batch.length; i++) {
+      const queuedEvent = batch[i];
+      
+      // Add delay between events to reduce stress
+      if (i > 0 && this.currentDelayMs > 0) {
+        await this.delay(this.currentDelayMs);
+      }
+      
       try {
-        await this.emit('drainEvent', queuedEvent);
+        const startTime = Date.now();
+        const drainPromise = this.drainSingleEvent(queuedEvent);
+        this.activeDrainPromises.add(drainPromise);
+        
+        await drainPromise;
+        
+        const responseTime = Date.now() - startTime;
+        this.recordResponseTime(responseTime);
+        this.adjustThrottling(responseTime);
+        
       } catch (error) {
         this.logger.error(`Failed to drain event ${queuedEvent.id}:`, error);
         this.handleEventFailure(queuedEvent);
+        this.adjustThrottlingForError();
       }
     }
+  }
+
+  private async drainSingleEvent(queuedEvent: QueuedEvent): Promise<void> {
+    const drainPromise = (async () => {
+      await this.emit('drainEvent', queuedEvent);
+    })();
+    
+    try {
+      await drainPromise;
+    } finally {
+      this.activeDrainPromises.delete(drainPromise);
+    }
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  private recordResponseTime(responseTime: number): void {
+    this.recentResponseTimes.push(responseTime);
+    
+    // Keep only recent response times (last 10)
+    if (this.recentResponseTimes.length > 10) {
+      this.recentResponseTimes.shift();
+    }
+  }
+
+  private adjustThrottling(responseTime: number): void {
+    if (!this.options.adaptiveThrottling) {
+      return;
+    }
+
+    const avgResponseTime = this.recentResponseTimes.reduce((sum, time) => sum + time, 0) / this.recentResponseTimes.length;
+    
+    // If response times are high, increase delay
+    if (avgResponseTime > 1000) { // 1 second
+      this.currentDelayMs = Math.min(this.currentDelayMs + 5, 100); // Max 100ms delay
+      this.logger.debug(`Increased throttling delay to ${this.currentDelayMs}ms due to high response time: ${avgResponseTime}ms`);
+    } 
+    // If response times are good, decrease delay
+    else if (avgResponseTime < 200 && this.currentDelayMs > this.options.eventDelayMs) {
+      this.currentDelayMs = Math.max(this.currentDelayMs - 2, this.options.eventDelayMs);
+      this.logger.debug(`Decreased throttling delay to ${this.currentDelayMs}ms due to good response time: ${avgResponseTime}ms`);
+    }
+  }
+
+  private adjustThrottlingForError(): void {
+    if (!this.options.adaptiveThrottling) {
+      return;
+    }
+
+    // Increase delay significantly on errors to reduce stress
+    this.currentDelayMs = Math.min(this.currentDelayMs + 20, 200); // Max 200ms delay on errors
+    this.logger.debug(`Increased throttling delay to ${this.currentDelayMs}ms due to error`);
   }
 
   private handleBatchFailure(batch: QueuedEvent[]): void {
@@ -145,11 +233,21 @@ export default class MemoryQueue extends EventEmitter {
   }
 
   getStats() {
+    const avgResponseTime = this.recentResponseTimes.length > 0 
+      ? this.recentResponseTimes.reduce((sum, time) => sum + time, 0) / this.recentResponseTimes.length 
+      : 0;
+
     return {
       queueSize: this.queue.length,
       maxSize: this.options.maxSize,
       isProcessing: this.isProcessing,
-      oldestEventAge: this.queue.length > 0 ? Date.now() - this.queue[0].timestamp : 0
+      oldestEventAge: this.queue.length > 0 ? Date.now() - this.queue[0].timestamp : 0,
+      activeConcurrentOperations: this.activeDrainPromises.size,
+      maxConcurrentOperations: this.options.maxConcurrentEvents,
+      currentThrottleDelayMs: this.currentDelayMs,
+      baseThrottleDelayMs: this.options.eventDelayMs,
+      averageResponseTimeMs: Math.round(avgResponseTime),
+      adaptiveThrottling: this.options.adaptiveThrottling
     };
   }
 

@@ -42,6 +42,16 @@ MEMORY_QUEUE_MAX_RETRIES=3
 # Overflow strategy when queue is full (default: drop-oldest)
 # Options: drop-oldest, drop-newest, reject
 MEMORY_QUEUE_OVERFLOW_STRATEGY=drop-oldest
+
+# Throttling and Rate Limiting Configuration
+# Delay between individual events within a batch in milliseconds (default: 10)
+MEMORY_QUEUE_EVENT_DELAY_MS=10
+
+# Enable adaptive throttling based on response times (default: true)
+MEMORY_QUEUE_ADAPTIVE_THROTTLING=true
+
+# Maximum concurrent drain operations (default: 5)
+MEMORY_QUEUE_MAX_CONCURRENT=5
 ```
 
 ## Benefits
@@ -50,6 +60,29 @@ MEMORY_QUEUE_OVERFLOW_STRATEGY=drop-oldest
 - **Higher Throughput**: Batched processing improves overall throughput
 - **Reduced Queue Load**: Background processing with retries reduces pressure on external queue systems
 - **Fault Tolerance**: Failed events are automatically retried with configurable limits
+- **Stress Management**: Intelligent throttling prevents overwhelming the underlying queue system
+
+## Stress Reduction Features
+
+The memory queue includes several mechanisms to prevent overwhelming the underlying queue system:
+
+### 1. Rate Limiting
+- **Event Delays**: Configurable delay between individual events within batches
+- **Concurrent Limits**: Maximum number of simultaneous drain operations
+- **Batch Processing**: Events processed in controlled batches rather than individually
+
+### 2. Adaptive Throttling
+- **Response Time Monitoring**: Tracks average response times from the underlying queue
+- **Dynamic Adjustment**: Automatically increases delays when response times are high
+- **Error Handling**: Significantly increases throttling delays when errors occur
+- **Recovery**: Gradually reduces delays when performance improves
+
+### 3. Throttling Behavior
+- **Initial Delay**: 10ms between events (configurable)
+- **High Response Time**: Delays increase by 5ms when avg response > 1000ms (max 100ms)
+- **Good Performance**: Delays decrease by 2ms when avg response < 200ms
+- **Error Conditions**: Delays increase by 20ms on errors (max 200ms)
+- **Adaptive Range**: 10ms (base) to 200ms (maximum under stress)
 
 ## Monitoring
 
@@ -70,7 +103,13 @@ Response includes memory queue statistics:
     "queueSize": 150,
     "maxSize": 10000,
     "isProcessing": false,
-    "oldestEventAge": 1250
+    "oldestEventAge": 1250,
+    "activeConcurrentOperations": 2,
+    "maxConcurrentOperations": 5,
+    "currentThrottleDelayMs": 15,
+    "baseThrottleDelayMs": 10,
+    "averageResponseTimeMs": 450,
+    "adaptiveThrottling": true
   }
 }
 ```

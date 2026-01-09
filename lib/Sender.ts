@@ -67,7 +67,10 @@ export default class Sender {
       batchSize: process.env.MEMORY_QUEUE_BATCH_SIZE ? parseInt(process.env.MEMORY_QUEUE_BATCH_SIZE, 10) : 100,
       drainInterval: process.env.MEMORY_QUEUE_DRAIN_INTERVAL ? parseInt(process.env.MEMORY_QUEUE_DRAIN_INTERVAL, 10) : 1000,
       maxRetries: process.env.MEMORY_QUEUE_MAX_RETRIES ? parseInt(process.env.MEMORY_QUEUE_MAX_RETRIES, 10) : 3,
-      onOverflow: (process.env.MEMORY_QUEUE_OVERFLOW_STRATEGY as 'drop-oldest' | 'drop-newest' | 'reject') || 'drop-oldest'
+      onOverflow: (process.env.MEMORY_QUEUE_OVERFLOW_STRATEGY as 'drop-oldest' | 'drop-newest' | 'reject') || 'drop-oldest',
+      eventDelayMs: process.env.MEMORY_QUEUE_EVENT_DELAY_MS ? parseInt(process.env.MEMORY_QUEUE_EVENT_DELAY_MS, 10) : 10,
+      adaptiveThrottling: process.env.MEMORY_QUEUE_ADAPTIVE_THROTTLING !== 'false',
+      maxConcurrentEvents: process.env.MEMORY_QUEUE_MAX_CONCURRENT ? parseInt(process.env.MEMORY_QUEUE_MAX_CONCURRENT, 10) : 5
     };
 
     this.memoryQueue = new MemoryQueue(this.logger, options);
