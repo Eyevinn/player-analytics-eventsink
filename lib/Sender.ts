@@ -107,9 +107,9 @@ export default class Sender {
       this.logger.debug(`Time taken to run "await queue.pushToQueue(event)"-> ${timeTaken}ms`);
       
       if (timeTaken > 5000) {
-        this.logger.error(`Queue operation took ${timeTaken}ms (> 5 seconds) - this indicates a serious performance issue`);
+        this.logger.warn(`Queue operation took ${timeTaken}ms (> 5 seconds) - performance may be degraded`);
       } else if (timeTaken > 2000) {
-        this.logger.warn(`Queue operation took ${timeTaken}ms (> 2 seconds) - performance may be degraded`);
+        this.logger.debug(`Queue operation took ${timeTaken}ms (> 2 seconds)`);
       }
       
       return queueResponse;
