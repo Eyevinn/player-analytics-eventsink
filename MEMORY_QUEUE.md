@@ -30,11 +30,11 @@ QUEUE_TYPE=SQS  # or redis, beanstalkd
 # Maximum number of events in memory queue (default: 10000)
 MEMORY_QUEUE_MAX_SIZE=10000
 
-# Number of events to process per batch (default: 100)
-MEMORY_QUEUE_BATCH_SIZE=100
+# Number of events to process per batch (default: 50)
+MEMORY_QUEUE_BATCH_SIZE=50
 
-# Interval between batch processing in milliseconds (default: 1000)
-MEMORY_QUEUE_DRAIN_INTERVAL=1000
+# Interval between batch processing in milliseconds (default: 2000)
+MEMORY_QUEUE_DRAIN_INTERVAL=2000
 
 # Maximum retry attempts for failed events (default: 3)
 MEMORY_QUEUE_MAX_RETRIES=3
@@ -44,14 +44,14 @@ MEMORY_QUEUE_MAX_RETRIES=3
 MEMORY_QUEUE_OVERFLOW_STRATEGY=drop-oldest
 
 # Throttling and Rate Limiting Configuration
-# Delay between individual events within a batch in milliseconds (default: 10)
-MEMORY_QUEUE_EVENT_DELAY_MS=10
+# Delay between individual events within a batch in milliseconds (default: 20)
+MEMORY_QUEUE_EVENT_DELAY_MS=20
 
 # Enable adaptive throttling based on response times (default: true)
 MEMORY_QUEUE_ADAPTIVE_THROTTLING=true
 
-# Maximum concurrent drain operations (default: 5)
-MEMORY_QUEUE_MAX_CONCURRENT=5
+# Maximum concurrent drain operations (default: 3)
+MEMORY_QUEUE_MAX_CONCURRENT=3
 ```
 
 ## Benefits
@@ -67,22 +67,25 @@ MEMORY_QUEUE_MAX_CONCURRENT=5
 The memory queue includes several mechanisms to prevent overwhelming the underlying queue system:
 
 ### 1. Rate Limiting
+
 - **Event Delays**: Configurable delay between individual events within batches
 - **Concurrent Limits**: Maximum number of simultaneous drain operations
 - **Batch Processing**: Events processed in controlled batches rather than individually
 
 ### 2. Adaptive Throttling
+
 - **Response Time Monitoring**: Tracks average response times from the underlying queue
 - **Dynamic Adjustment**: Automatically increases delays when response times are high
 - **Error Handling**: Significantly increases throttling delays when errors occur
 - **Recovery**: Gradually reduces delays when performance improves
 
 ### 3. Throttling Behavior
-- **Initial Delay**: 10ms between events (configurable)
+
+- **Initial Delay**: 20ms between events (configurable)
 - **High Response Time**: Delays increase by 5ms when avg response > 1000ms (max 100ms)
 - **Good Performance**: Delays decrease by 2ms when avg response < 200ms
 - **Error Conditions**: Delays increase by 20ms on errors (max 200ms)
-- **Adaptive Range**: 10ms (base) to 200ms (maximum under stress)
+- **Adaptive Range**: 20ms (base) to 200ms (maximum under stress)
 
 ## Monitoring
 
@@ -105,9 +108,9 @@ Response includes memory queue statistics:
     "isProcessing": false,
     "oldestEventAge": 1250,
     "activeConcurrentOperations": 2,
-    "maxConcurrentOperations": 5,
-    "currentThrottleDelayMs": 15,
-    "baseThrottleDelayMs": 10,
+    "maxConcurrentOperations": 3,
+    "currentThrottleDelayMs": 25,
+    "baseThrottleDelayMs": 20,
     "averageResponseTimeMs": 450,
     "adaptiveThrottling": true
   }
@@ -126,7 +129,7 @@ Response includes memory queue statistics:
 - **Memory Usage**: The memory queue holds events in RAM. Monitor memory usage and adjust `MEMORY_QUEUE_MAX_SIZE` accordingly
 - **Batch Size**: Larger batch sizes improve throughput but increase memory usage and processing latency
 - **Drain Interval**: Lower intervals reduce latency but increase CPU usage
-- **Overflow Strategy**: 
+- **Overflow Strategy**:
   - `drop-oldest`: Prevents memory issues but may lose older events
   - `drop-newest`: Preserves older events but rejects new ones when full
   - `reject`: Fails requests when queue is full, falling back to direct queue operations
@@ -144,6 +147,7 @@ When the application receives SIGTERM or SIGINT:
 ## Fallback Behavior
 
 If the memory queue encounters errors:
+
 - Individual event failures fall back to direct queue operations
 - Memory queue initialization failures disable the feature and use direct operations
 - Queue overflow (when using `reject` strategy) falls back to direct operations
@@ -151,6 +155,7 @@ If the memory queue encounters errors:
 ## Example Usage
 
 ### Docker Environment
+
 ```bash
 # Memory queue enabled by default
 docker run -e QUEUE_TYPE=SQS \
@@ -165,12 +170,13 @@ docker run -e DISABLE_MEMORY_QUEUE=true \
 ```
 
 ### Environment File
+
 ```bash
 # .env - Memory queue enabled by default
 QUEUE_TYPE=SQS
 MEMORY_QUEUE_MAX_SIZE=10000
-MEMORY_QUEUE_BATCH_SIZE=100
-MEMORY_QUEUE_DRAIN_INTERVAL=1000
+MEMORY_QUEUE_BATCH_SIZE=50
+MEMORY_QUEUE_DRAIN_INTERVAL=2000
 
 # To disable memory queue
 # DISABLE_MEMORY_QUEUE=true
@@ -179,6 +185,7 @@ MEMORY_QUEUE_DRAIN_INTERVAL=1000
 ## Backward Compatibility
 
 The memory queue feature is now enabled by default but can be disabled. When `DISABLE_MEMORY_QUEUE=true`:
+
 - All functionality reverts to the previous behavior
 - No memory queue is created
 - Direct queue operations are used

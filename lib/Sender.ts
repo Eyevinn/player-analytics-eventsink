@@ -1,5 +1,5 @@
-import winston from 'winston';
-import MemoryQueue from './MemoryQueue';
+import winston from "winston";
+import MemoryQueue from "./MemoryQueue";
 
 export default class Sender {
   logger: winston.Logger;
@@ -10,8 +10,8 @@ export default class Sender {
 
   constructor(logger: winston.Logger) {
     this.logger = logger;
-    this.useMemoryQueue = process.env.DISABLE_MEMORY_QUEUE !== 'true';
-    
+    this.useMemoryQueue = process.env.DISABLE_MEMORY_QUEUE !== "true";
+
     if (this.useMemoryQueue) {
       this.initializeMemoryQueue();
     }
@@ -44,18 +44,23 @@ export default class Sender {
     let QueueAdapter: any;
 
     switch (queueType) {
-      case 'SQS':
-        QueueAdapter = (await import('@eyevinn/player-analytics-shared')).SqsQueueAdapter;
-        const maxSockets = process.env.SQS_MAX_SOCKETS ? parseInt(process.env.SQS_MAX_SOCKETS, 10) : undefined;
+      case "SQS":
+        QueueAdapter = (await import("@eyevinn/player-analytics-shared"))
+          .SqsQueueAdapter;
+        const maxSockets = process.env.SQS_MAX_SOCKETS
+          ? parseInt(process.env.SQS_MAX_SOCKETS, 10)
+          : undefined;
         return new QueueAdapter(this.logger, { maxSockets });
-      case 'beanstalkd':
-        QueueAdapter = (await import('@eyevinn/player-analytics-shared')).BeanstalkdAdapter;
+      case "beanstalkd":
+        QueueAdapter = (await import("@eyevinn/player-analytics-shared"))
+          .BeanstalkdAdapter;
         break;
-      case 'redis':
-        QueueAdapter = (await import('@eyevinn/player-analytics-shared')).RedisAdapter;
+      case "redis":
+        QueueAdapter = (await import("@eyevinn/player-analytics-shared"))
+          .RedisAdapter;
         break;
       default:
-        throw new Error('No queue type specified');
+        throw new Error("No queue type specified");
     }
 
     return new QueueAdapter(this.logger);
@@ -63,39 +68,62 @@ export default class Sender {
 
   private initializeMemoryQueue(): void {
     const options = {
-      maxSize: process.env.MEMORY_QUEUE_MAX_SIZE ? parseInt(process.env.MEMORY_QUEUE_MAX_SIZE, 10) : 10000,
-      batchSize: process.env.MEMORY_QUEUE_BATCH_SIZE ? parseInt(process.env.MEMORY_QUEUE_BATCH_SIZE, 10) : 100,
-      drainInterval: process.env.MEMORY_QUEUE_DRAIN_INTERVAL ? parseInt(process.env.MEMORY_QUEUE_DRAIN_INTERVAL, 10) : 1000,
-      maxRetries: process.env.MEMORY_QUEUE_MAX_RETRIES ? parseInt(process.env.MEMORY_QUEUE_MAX_RETRIES, 10) : 3,
-      onOverflow: (process.env.MEMORY_QUEUE_OVERFLOW_STRATEGY as 'drop-oldest' | 'drop-newest' | 'reject') || 'drop-oldest',
-      eventDelayMs: process.env.MEMORY_QUEUE_EVENT_DELAY_MS ? parseInt(process.env.MEMORY_QUEUE_EVENT_DELAY_MS, 10) : 10,
-      adaptiveThrottling: process.env.MEMORY_QUEUE_ADAPTIVE_THROTTLING !== 'false',
-      maxConcurrentEvents: process.env.MEMORY_QUEUE_MAX_CONCURRENT ? parseInt(process.env.MEMORY_QUEUE_MAX_CONCURRENT, 10) : 5
+      maxSize: process.env.MEMORY_QUEUE_MAX_SIZE
+        ? parseInt(process.env.MEMORY_QUEUE_MAX_SIZE, 10)
+        : 10000,
+      batchSize: process.env.MEMORY_QUEUE_BATCH_SIZE
+        ? parseInt(process.env.MEMORY_QUEUE_BATCH_SIZE, 10)
+        : 50,
+      drainInterval: process.env.MEMORY_QUEUE_DRAIN_INTERVAL
+        ? parseInt(process.env.MEMORY_QUEUE_DRAIN_INTERVAL, 10)
+        : 2000,
+      maxRetries: process.env.MEMORY_QUEUE_MAX_RETRIES
+        ? parseInt(process.env.MEMORY_QUEUE_MAX_RETRIES, 10)
+        : 3,
+      onOverflow:
+        (process.env.MEMORY_QUEUE_OVERFLOW_STRATEGY as
+          | "drop-oldest"
+          | "drop-newest"
+          | "reject") || "drop-oldest",
+      eventDelayMs: process.env.MEMORY_QUEUE_EVENT_DELAY_MS
+        ? parseInt(process.env.MEMORY_QUEUE_EVENT_DELAY_MS, 10)
+        : 20,
+      adaptiveThrottling:
+        process.env.MEMORY_QUEUE_ADAPTIVE_THROTTLING !== "false",
+      maxConcurrentEvents: process.env.MEMORY_QUEUE_MAX_CONCURRENT
+        ? parseInt(process.env.MEMORY_QUEUE_MAX_CONCURRENT, 10)
+        : 3,
     };
 
     this.memoryQueue = new MemoryQueue(this.logger, options);
-    
-    this.memoryQueue.on('drainEvent', async (queuedEvent) => {
+
+    this.memoryQueue.on("drainEvent", async (queuedEvent) => {
       return this.sendToActualQueue(queuedEvent.event);
     });
 
-    this.memoryQueue.on('eventDropped', (queuedEvent) => {
-      this.logger.warn(`Event ${queuedEvent.id} was dropped from memory queue due to overflow`);
+    this.memoryQueue.on("eventDropped", (queuedEvent) => {
+      this.logger.warn(
+        `Event ${queuedEvent.id} was dropped from memory queue due to overflow`,
+      );
     });
 
-    this.memoryQueue.on('eventFailed', (queuedEvent) => {
-      this.logger.error(`Event ${queuedEvent.id} permanently failed after all retries`);
+    this.memoryQueue.on("eventFailed", (queuedEvent) => {
+      this.logger.error(
+        `Event ${queuedEvent.id} permanently failed after all retries`,
+      );
     });
 
-    this.logger.info('Memory queue initialized and background processor started');
+    this.logger.info(
+      "Memory queue initialized and background processor started",
+    );
   }
 
   private async sendToActualQueue(event: Object): Promise<Object> {
     const queueType = process.env.QUEUE_TYPE;
-    
+
     if (!queueType) {
-      this.logger.warn('No queue type specified');
-      return { message: 'No queue type specified' };
+      this.logger.warn("No queue type specified");
+      return { message: "No queue type specified" };
     }
 
     try {
@@ -103,18 +131,22 @@ export default class Sender {
       const queueTs = Date.now();
       const queueResponse = await queue.pushToQueue(event);
       const timeTaken = Date.now() - queueTs;
-      
-      this.logger.debug(`Time taken to run "await queue.pushToQueue(event)"-> ${timeTaken}ms`);
-      
+
+      this.logger.debug(
+        `Time taken to run "await queue.pushToQueue(event)"-> ${timeTaken}ms`,
+      );
+
       if (timeTaken > 5000) {
-        this.logger.warn(`Queue operation took ${timeTaken}ms (> 5 seconds) - performance may be degraded`);
+        this.logger.warn(
+          `Queue operation took ${timeTaken}ms (> 5 seconds) - performance may be degraded`,
+        );
       } else if (timeTaken > 2000) {
         this.logger.debug(`Queue operation took ${timeTaken}ms (> 2 seconds)`);
       }
-      
+
       return queueResponse;
     } catch (error) {
-      this.logger.error('Error getting queue adapter:', error);
+      this.logger.error("Error getting queue adapter:", error);
       return { message: error.message };
     }
   }
@@ -129,18 +161,25 @@ export default class Sender {
       try {
         const result = this.memoryQueue.enqueue(event);
         if (result.success) {
-          this.logger.debug(`Event ${result.id} added to memory queue, size: ${this.memoryQueue.size()}`);
-          return { 
-            message: 'Event queued for processing',
+          this.logger.debug(
+            `Event ${result.id} added to memory queue, size: ${this.memoryQueue.size()}`,
+          );
+          return {
+            message: "Event queued for processing",
             memoryQueueId: result.id,
-            queueSize: this.memoryQueue.size()
+            queueSize: this.memoryQueue.size(),
           };
         } else {
-          this.logger.error(`Failed to add event to memory queue: ${result.error}`);
-          return { message: result.error || 'Failed to queue event' };
+          this.logger.error(
+            `Failed to add event to memory queue: ${result.error}`,
+          );
+          return { message: result.error || "Failed to queue event" };
         }
       } catch (error) {
-        this.logger.error('Memory queue error, falling back to direct send:', error);
+        this.logger.error(
+          "Memory queue error, falling back to direct send:",
+          error,
+        );
         return await this.sendToActualQueue(event);
       }
     } else {
