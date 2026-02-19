@@ -332,13 +332,23 @@ export default class MemoryQueue extends EventEmitter {
 
   async flush(): Promise<void> {
     this.logger.info(`Flushing memory queue with ${this.count} events`);
+    const maxWaitMs = 30000;
+    const startTime = Date.now();
 
     while (this.count > 0 && !this.isProcessing) {
+      if (Date.now() - startTime > maxWaitMs) {
+        this.logger.warn(`Flush timeout after ${maxWaitMs}ms. ${this.count} events remaining.`);
+        break;
+      }
       await this.processBatch();
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
 
     while (this.isProcessing) {
+      if (Date.now() - startTime > maxWaitMs) {
+        this.logger.warn(`Flush timeout waiting for processing. ${this.count} events remaining.`);
+        break;
+      }
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
   }

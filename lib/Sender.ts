@@ -146,8 +146,8 @@ export default class Sender {
 
       return queueResponse;
     } catch (error) {
-      this.logger.error("Error getting queue adapter:", error);
-      return { message: error.message };
+      this.logger.error("Error sending to queue:", error instanceof Error ? error.message : String(error));
+      throw error;
     }
   }
 
