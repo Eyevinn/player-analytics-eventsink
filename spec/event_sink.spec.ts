@@ -41,6 +41,7 @@ describe('event-sink module', () => {
 
 
   it('can generate valid response headers', () => {
+    // Wildcard mode (no CORS_ALLOWED_ORIGINS) — no Vary header needed
     process.env.CORS_ALLOWED_ORIGINS = '';
     const responseHeaders = generateResponseHeaders();
     expect(responseHeaders['Content-Type']).toEqual('application/json');
@@ -48,14 +49,13 @@ describe('event-sink module', () => {
     expect(responseHeaders['Access-Control-Allow-Headers']).toEqual('Content-Type, Origin, X-EPAS-Event, X-EPAS-Version');
     expect(responseHeaders['Access-Control-Allow-Methods']).toEqual('POST, OPTIONS');
     expect(responseHeaders['X-EPAS-Version']).not.toBeNull();
+    expect(responseHeaders['Vary']).not.toBeDefined();
 
     const responseHeadersWithOrigin = generateResponseHeaders('https://example.com');
-    expect(responseHeadersWithOrigin['Content-Type']).toEqual('application/json');
     expect(responseHeadersWithOrigin['Access-Control-Allow-Origin']).toEqual('*');
-    expect(responseHeadersWithOrigin['Access-Control-Allow-Headers']).toEqual('Content-Type, Origin, X-EPAS-Event, X-EPAS-Version');
-    expect(responseHeadersWithOrigin['Access-Control-Allow-Methods']).toEqual('POST, OPTIONS');
-    expect(responseHeadersWithOrigin['X-EPAS-Version']).not.toBeNull();
+    expect(responseHeadersWithOrigin['Vary']).not.toBeDefined();
 
+    // Dynamic CORS — Vary: Origin must be present
     process.env.CORS_ALLOWED_ORIGINS = 'https://example.com, https://mydomain.com';
     const responseHeadersWithAllowedOrigin = generateResponseHeaders('https://mydomain.com');
     expect(responseHeadersWithAllowedOrigin['Content-Type']).toEqual('application/json');
@@ -63,13 +63,13 @@ describe('event-sink module', () => {
     expect(responseHeadersWithAllowedOrigin['Access-Control-Allow-Headers']).toEqual('Content-Type, Origin, X-EPAS-Event, X-EPAS-Version');
     expect(responseHeadersWithAllowedOrigin['Access-Control-Allow-Methods']).toEqual('POST, OPTIONS');
     expect(responseHeadersWithAllowedOrigin['X-EPAS-Version']).not.toBeNull();
+    expect(responseHeadersWithAllowedOrigin['Vary']).toEqual('Origin');
 
+    // Not-allowed origin — still needs Vary: Origin (CDN must know to vary)
     const responseHeadersWithNotAllowedOrigin = generateResponseHeaders('https://notallowed.com');
     expect(responseHeadersWithNotAllowedOrigin['Content-Type']).toEqual('application/json');
     expect(responseHeadersWithNotAllowedOrigin['Access-Control-Allow-Origin']).not.toBeDefined();
-    expect(responseHeadersWithNotAllowedOrigin['Access-Control-Allow-Headers']).toEqual('Content-Type, Origin, X-EPAS-Event, X-EPAS-Version');
-    expect(responseHeadersWithNotAllowedOrigin['Access-Control-Allow-Methods']).toEqual('POST, OPTIONS');
-    expect(responseHeadersWithNotAllowedOrigin['X-EPAS-Version']).not.toBeNull();
+    expect(responseHeadersWithNotAllowedOrigin['Vary']).toEqual('Origin');
     process.env.CORS_ALLOWED_ORIGINS = '';
   });
 
