@@ -9,6 +9,7 @@ export interface responseBody {
   sessionId: string;
   valid: boolean;
   message?: string;
+  errors?: ValidationError[];
   queueResponse?: any;
 }
 
@@ -19,10 +20,20 @@ export type validatorResponse = {
   body: responseBody;
 };
 
+export interface ValidationError {
+  field: string;
+  message: string;
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  errors?: ValidationError[];
+}
+
 export interface EventValidator {
   logger: winston.Logger;
   eventSchema: any;
-  validateEvent(event: Object): boolean;
+  validateEvent(event: Object | undefined | null): ValidationResult;
 }
 
 // CMCDv2 response interfaces
