@@ -66,7 +66,7 @@ export function generateValidResponseBody(
   event: Record<string, any>,
   queueResponse?: any,
 ): responseBody {
-  let body: responseBody = {
+  const body: responseBody = {
     sessionId: event.sessionId,
     valid: true,
     queueResponse: queueResponse,

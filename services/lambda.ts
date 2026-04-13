@@ -18,7 +18,7 @@ const sender = new Sender(Logger);
 
 export const handler = async (event: ALBEvent): Promise<ALBResult> => {
   if (event.httpMethod === 'POST' && event.path === '/' && event['body']) {
-    let requestHost: string = 'unknown';
+    let requestHost = 'unknown';
     if (event.headers && event.headers['host']) {
       requestHost = event.headers['host'];
     }
