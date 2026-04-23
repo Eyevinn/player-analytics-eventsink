@@ -7,6 +7,7 @@
   "scripts": {
     "start": "ts-node services/fastify.ts",
     "test": "ts-node node_modules/jasmine/bin/jasmine",
+    "lint": "eslint --ext .ts lib/ services/ spec/ types/ index.ts",
     "postversion": "git push && git push --tags",
     "build": "rm -rf build && tsc -p tsconfig-build.json"
   },
@@ -29,8 +30,10 @@
   "homepage": "https://github.com/Eyevinn/player-analytics-eventsink#readme",
   "devDependencies": {
     "@types/jasmine": "^3.10.2",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
     "aws-sdk-client-mock": "^4.1.0",
-    "eslint": "^6.1.3",
+    "eslint": "^8.57.1",
     "jasmine": "^3.10.0",
     "ts-node": "^10.4.0",
     "typescript": "^4.3.5"
