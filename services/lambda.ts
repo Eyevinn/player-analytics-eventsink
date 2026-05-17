@@ -22,7 +22,16 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
     if (event.headers && event.headers['host']) {
       requestHost = event.headers['host'];
     }
-    const body = JSON.parse(event.body);
+    let body;
+    try {
+      body = JSON.parse(event.body);
+    } catch (parseError) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Invalid JSON in request body" }),
+        headers: { "Content-Type": "application/json" }
+      } as ALBResult;
+    }
     const validatorTs = Date.now();
     const validEvent = validator.validateEvent(body);
     Logger.debug(`Time taken to validate event-> ${Date.now() - validatorTs}ms`);
@@ -53,11 +62,12 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
         }
       } catch (error) {
         Logger.error('Sender timeout or error:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
         response.statusCode = 502;
         response.statusDescription = 'Bad Gateway';
         response.body = JSON.stringify({
           sessionId: body.sessionId || -1,
-          message: error.message === 'Operation timed out' ? 'Request timeout' : 'Queue service unavailable',
+          message: errorMessage === 'Operation timed out' ? 'Request timeout' : 'Queue service unavailable',
           valid: false,
         });
       }
@@ -71,7 +81,7 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
       statusCode: 200,
       statusDescription: 'OK',
       headers: generateResponseHeaders(),
-      body: '{ status: "OK" }',
+      body: JSON.stringify({ status: "OK" }),
     };
     return response as ALBResult;
   }

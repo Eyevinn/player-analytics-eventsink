@@ -56,8 +56,13 @@ fastify.get("/health", (request, reply) => {
 });
 
 fastify.post("/", async (request, reply) => {
-  const body =
-    request.body instanceof Object ? request.body : JSON.parse(request.body);
+  let body;
+  try {
+    body = request.body instanceof Object ? request.body : JSON.parse(request.body);
+  } catch (parseError) {
+    reply.code(400).send({ error: "Invalid JSON in request body" });
+    return;
+  }
   const validatorTs = Date.now();
   const validEvent = validator.validateEvent(body);
   Logger.debug(`Time taken to validate event-> ${Date.now() - validatorTs}ms`);
@@ -98,13 +103,14 @@ fastify.post("/", async (request, reply) => {
       }
     } catch (error) {
       Logger.error("Sender timeout or error:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       reply
         .status(502)
         .headers(generateResponseHeaders(request.headers.origin))
         .send({
           sessionId: body.sessionId || -1,
           message:
-            error.message === "Operation timed out"
+            errorMessage === "Operation timed out"
               ? "Request timeout"
               : "Queue service unavailable",
           valid: false,
@@ -129,10 +135,18 @@ fastify.options("/cmcd", (request, reply) => {
 fastify.post("/cmcd", async (request, reply) => {
   try {
     // Parse body
-    const body: CMCDv2RequestBody =
-      request.body instanceof Object
+    let body: CMCDv2RequestBody;
+    try {
+      body = request.body instanceof Object
         ? request.body
         : JSON.parse(request.body || "{}");
+    } catch (parseError) {
+      reply
+        .code(400)
+        .headers(generateResponseHeaders(request.headers.origin))
+        .send({ error: "Invalid JSON in request body" });
+      return;
+    }
 
     // Parse CMCDv2 data from body and headers
     const parsed = cmcdParser.parse(
@@ -198,7 +212,7 @@ fastify.post("/cmcd", async (request, reply) => {
           results.push({
             event: epasEvent.event,
             success: false,
-            error: error.message || "Failed to queue event",
+            error: (error instanceof Error ? error.message : String(error)) || "Failed to queue event",
           });
         }
       } else {
@@ -234,7 +248,7 @@ fastify.post("/cmcd", async (request, reply) => {
     reply
       .status(500)
       .headers(generateResponseHeaders(request.headers.origin))
-      .send(generateCMCDv2ErrorBody("Internal server error", [error.message]));
+      .send(generateCMCDv2ErrorBody("Internal server error", [error instanceof Error ? error.message : String(error)]));
   }
 });
 

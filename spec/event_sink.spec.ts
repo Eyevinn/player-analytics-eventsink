@@ -191,7 +191,7 @@ describe('event-sink module', () => {
         message: 'No queue type specified',
       });
     });
-    process.env.QUEUE_TYPE = undefined;
+    delete process.env.QUEUE_TYPE;
     const sqsResp = { MessageId: '12345678-4444-5555-6666-111122223333' };
     const event = request;
     event.path = '/';
@@ -199,9 +199,10 @@ describe('event-sink module', () => {
 
     sqsMock.on(SendMessageCommand).resolves(sqsResp);
     const response = await Lambda.handler(event);
+    expect(sqsMock.calls()).toHaveSize(0);
+    // When QUEUE_TYPE is not set, sendToActualQueue returns early with a message
     expect(response.statusCode).toEqual(200);
     expect(response.statusDescription).toEqual('OK');
-    expect(sqsMock.calls()).toHaveSize(0);
     expect(response.body).toContain('No queue type specified');
   });
 });
