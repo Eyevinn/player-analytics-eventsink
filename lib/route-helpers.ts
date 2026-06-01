@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import {
   initResponseBody,
   responseBody,
+  ValidationError,
   CMCDv2ResponseBody,
   CMCDv2EventResult,
   CMCDv2ErrorResponse,
@@ -80,12 +81,17 @@ export function generateValidResponseBody(
  */
 export function generateInvalidResponseBody(
   event?: Record<string, any>,
+  errors?: ValidationError[],
 ): responseBody {
-  return {
+  const body: responseBody = {
     sessionId: event?.sessionId || -1,
     message: "Invalid player event",
     valid: false,
   };
+  if (errors && errors.length > 0) {
+    body.errors = errors;
+  }
+  return body;
 }
 
 export function generateInitResponseBody(

@@ -59,10 +59,10 @@ fastify.post("/", async (request, reply) => {
   const body =
     request.body instanceof Object ? request.body : JSON.parse(request.body);
   const validatorTs = Date.now();
-  const validEvent = validator.validateEvent(body);
+  const validationResult = validator.validateEvent(body);
   Logger.debug(`Time taken to validate event-> ${Date.now() - validatorTs}ms`);
 
-  if (validEvent) {
+  if (validationResult.valid) {
     const senderTs = Date.now();
     try {
       const useMemoryQueue = process.env.DISABLE_MEMORY_QUEUE !== "true";
@@ -114,7 +114,7 @@ fastify.post("/", async (request, reply) => {
     reply
       .status(400)
       .headers(generateResponseHeaders(request.headers.origin))
-      .send(generateInvalidResponseBody(body));
+      .send(generateInvalidResponseBody(body, validationResult.errors));
   }
 });
 
@@ -183,9 +183,9 @@ fastify.post("/cmcd", async (request, reply) => {
     const useMemoryQueue = process.env.DISABLE_MEMORY_QUEUE !== "true";
 
     for (const epasEvent of epasEvents) {
-      const validEvent = validator.validateEvent(epasEvent);
+      const epasValidation = validator.validateEvent(epasEvent);
 
-      if (validEvent) {
+      if (epasValidation.valid) {
         try {
           if (useMemoryQueue) {
             await sender.send(epasEvent);
@@ -202,13 +202,16 @@ fastify.post("/cmcd", async (request, reply) => {
           });
         }
       } else {
+        const errorDetail = epasValidation.errors
+          ? epasValidation.errors.map((e) => `${e.field}: ${e.message}`).join('; ')
+          : 'Unknown validation error';
         Logger.debug(
           `Invalid EPAS event generated from CMCDv2: ${JSON.stringify(epasEvent)}`,
         );
         results.push({
           event: epasEvent.event,
           success: false,
-          error: "Generated EPAS event failed validation",
+          error: `EPAS validation failed: ${errorDetail}`,
         });
         warnings.push(`Event '${epasEvent.event}' failed EPAS validation`);
       }
