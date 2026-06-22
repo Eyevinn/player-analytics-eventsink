@@ -12,6 +12,7 @@ describe('Fastify server', () => {
     });
     if (response.headers) {
       expect(response.headers['access-control-allow-origin']).toEqual('https://test.domain.net');
+      expect(response.headers['vary']).toEqual('Origin');
     }
     process.env.CORS_ALLOWED_ORIGINS = '';
   });  

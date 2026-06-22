@@ -28,10 +28,12 @@ export function generateResponseHeaders(origin?: string) {
       return {
         ...responseHeaders,
         "Access-Control-Allow-Origin": origin,
+        Vary: "Origin",
       };
     } else {
       return {
         ...responseHeaders,
+        Vary: "Origin",
       };
     }
   }
