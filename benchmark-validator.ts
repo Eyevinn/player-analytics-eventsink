@@ -1,9 +1,10 @@
 /**
- * Benchmark: AJV Validator performance
- * Run from repo root: npx ts-node benchmark-validator.ts
+ * Benchmark: measure `Validator.validateEvent` throughput on a mix of
+ * valid and invalid EPAS events. Prints ops/sec and mean latency.
  *
- * Measures validation throughput for the Validator class.
- * Compare results between main (uncached) and the PR branch (cached).
+ * Run from the repo root: `npm run bench`
+ *
+ * Excluded from the published build via `tsconfig-build.json`.
  */
 import Logger from './logging/logger';
 import { Validator } from './lib/Validator';

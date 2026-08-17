@@ -76,8 +76,12 @@ export function generateValidResponseBody(
 }
 
 /**
- * Method that returns an invalid response
- * @param optional event object
+ * Build the JSON body for a 400 Invalid Player Event response.
+ *
+ * @param event optional event object — used to echo back `sessionId` when present
+ * @param errors optional array of validation errors — included in the response
+ *   body only when non-empty, so a caller-agnostic "invalid" 400 (no schema
+ *   errors known, e.g. from a 404/405 wildcard route) omits the field
  */
 export function generateInvalidResponseBody(
   event?: Record<string, any>,
