@@ -9,7 +9,8 @@
     "test": "ts-node node_modules/jasmine/bin/jasmine",
     "lint": "eslint --ext .ts lib/ services/ spec/ types/ index.ts",
     "postversion": "git push && git push --tags",
-    "build": "rm -rf build && tsc -p tsconfig-build.json"
+    "build": "rm -rf build && tsc -p tsconfig-build.json",
+    "bench": "ts-node benchmark-validator.ts"
   },
   "files": [
     "build",

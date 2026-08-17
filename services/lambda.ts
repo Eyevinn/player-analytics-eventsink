@@ -24,15 +24,15 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
     }
     const body = JSON.parse(event.body);
     const validatorTs = Date.now();
-    const validEvent = validator.validateEvent(body);
+    const validationResult = validator.validateEvent(body);
     Logger.debug(`Time taken to validate event-> ${Date.now() - validatorTs}ms`);
     const response = {
-      statusCode: validEvent ? 200 : 400,
-      statusDescription: validEvent ? 'OK' : 'Bad Request',
+      statusCode: validationResult.valid ? 200 : 400,
+      statusDescription: validationResult.valid ? 'OK' : 'Bad Request',
       headers: generateResponseHeaders(),
       body: '{}',
     };
-    if (validEvent) {
+    if (validationResult.valid) {
       body.host = requestHost;
       const senderTs = Date.now();
       try {
@@ -62,7 +62,7 @@ export const handler = async (event: ALBEvent): Promise<ALBResult> => {
         });
       }
     } else {
-      response.body = JSON.stringify(generateInvalidResponseBody(body));
+      response.body = JSON.stringify(generateInvalidResponseBody(body, validationResult.errors));
     }
     return response as ALBResult;
   }

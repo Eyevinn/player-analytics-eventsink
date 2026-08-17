@@ -113,9 +113,12 @@ describe('event-sink module', () => {
       const response = await Lambda.handler(event);
       expect(response.statusCode).toEqual(400);
       expect(response.statusDescription).toEqual('Bad Request');
-      expect(response.body).toEqual(
-        '{"sessionId":"123-214-234","message":"Invalid player event","valid":false}'
-      );
+      const body = JSON.parse(response.body!);
+      expect(body.sessionId).toEqual('123-214-234');
+      expect(body.message).toEqual('Invalid player event');
+      expect(body.valid).toBe(false);
+      expect(body.errors).toBeDefined();
+      expect(body.errors.length).toBeGreaterThan(0);
     }
   });
 
@@ -130,7 +133,12 @@ describe('event-sink module', () => {
     const response = await Lambda.handler(event);
     expect(response.statusCode).toEqual(400);
     expect(response.statusDescription).toEqual('Bad Request');
-    expect(response.body).toEqual('{"sessionId":-1,"message":"Invalid player event","valid":false}');
+    const body = JSON.parse(response.body!);
+    expect(body.sessionId).toEqual(-1);
+    expect(body.message).toEqual('Invalid player event');
+    expect(body.valid).toBe(false);
+    expect(body.errors).toBeDefined();
+    expect(body.errors.length).toBeGreaterThan(0);
   });
 
   it('should dismiss request if "path" != "/" ', async () => {

@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "exclude": [
-    "spec/**/*.spec.ts"
+    "spec/**/*.spec.ts",
+    "benchmark-*.ts"
   ]
 }
