@@ -24,6 +24,7 @@ e.g. `QUEUE_TYPE=redis npm start` will start a `fastify` service towards your lo
 QUEUE_TYPE = "<SQS | beanstalkd | redis>"
 HEARTBEAT_INTERVAL = "<heartbeat-interval>"
 CORS_ALLOWED_ORIGINS = "<comma-separated-list-of-origins-to-allow>"
+# When unset, responses use a wildcard `Access-Control-Allow-Origin: *` (an open, any-browser-origin ingestion endpoint) and a startup warning is emitted; set it to restrict which browser origins may POST events.
 
 # Memory Queue (enabled by default for improved performance)
 DISABLE_MEMORY_QUEUE = "<true to disable, false or unset for enabled>"

@@ -287,6 +287,17 @@ const gracefulShutdown = async (signal: string) => {
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
+export const warnIfCorsAllowlistUnset = () => {
+  if (
+    !process.env.CORS_ALLOWED_ORIGINS ||
+    process.env.CORS_ALLOWED_ORIGINS.trim() === ""
+  ) {
+    Logger.warn(
+      "No CORS allow-list configured (CORS_ALLOWED_ORIGINS is unset): responses use a wildcard 'Access-Control-Allow-Origin: *', so any web origin can POST events from a browser. Set CORS_ALLOWED_ORIGINS to a comma-separated list of trusted origins to restrict which browser origins are allowed.",
+    );
+  }
+};
+
 const start = async () => {
   try {
     await fastify.listen({
@@ -296,6 +307,8 @@ const start = async () => {
     Logger.info(
       `Server started on ${fastify.server.address().address}:${fastify.server.address().port}`,
     );
+
+    warnIfCorsAllowlistUnset();
 
     if (process.env.DISABLE_MEMORY_QUEUE === "true") {
       Logger.info("Memory queue disabled, using direct queue operations");
