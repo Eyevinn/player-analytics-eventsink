@@ -9,6 +9,7 @@ import {
   getTimeoutMs,
   generateCMCDv2ResponseBody,
   generateCMCDv2ErrorBody,
+  attachDomainFromOrigin,
 } from "../lib/route-helpers";
 import Sender from "../lib/Sender";
 import Logger from "../logging/logger";
@@ -63,6 +64,10 @@ fastify.post("/", async (request, reply) => {
   Logger.debug(`Time taken to validate event-> ${Date.now() - validatorTs}ms`);
 
   if (validationResult.valid) {
+    // Server-derive the EPAS `domain` from the request's Origin header and
+    // attach it before forwarding, so it reaches the queue for downstream
+    // storage. Omitted entirely when the header is absent (see spec contract).
+    attachDomainFromOrigin(body, request.headers.origin);
     const senderTs = Date.now();
     try {
       const useMemoryQueue = process.env.DISABLE_MEMORY_QUEUE !== "true";
@@ -183,6 +188,10 @@ fastify.post("/cmcd", async (request, reply) => {
     const useMemoryQueue = process.env.DISABLE_MEMORY_QUEUE !== "true";
 
     for (const epasEvent of epasEvents) {
+      // Server-derive the EPAS `domain` from the request's Origin header and
+      // attach it to each converted event before forwarding. Omitted entirely
+      // when the header is absent (see spec contract).
+      attachDomainFromOrigin(epasEvent, request.headers.origin);
       const epasValidation = validator.validateEvent(epasEvent);
 
       if (epasValidation.valid) {

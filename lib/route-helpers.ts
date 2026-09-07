@@ -44,6 +44,60 @@ export function generateResponseHeaders(origin?: string) {
   };
 }
 
+/**
+ * Derive the EPAS `domain` field from a request's HTTP `Origin` header.
+ *
+ * Per the EPAS specification (player-analytics-specification 0.6.0, server-
+ * populated fields), `domain` is the scheme + host + optional port of the page
+ * that produced the event — i.e. the value of the `Origin` header itself
+ * (e.g. "https://example.com"). It is server-derived and MUST NOT be trusted as
+ * a client-supplied value. When the `Origin` header is absent (or is not a
+ * parseable origin), the field is omitted entirely — never set to an empty
+ * string or a placeholder.
+ *
+ * We normalise the header through the URL parser and return `URL.origin`, which
+ * yields exactly the scheme + host + optional port. Any value that does not
+ * parse to a concrete origin (missing, empty, or malformed) yields `undefined`
+ * so the caller omits the field.
+ *
+ * @param origin the raw `Origin` request header, if present
+ * @returns the derived domain string, or `undefined` when it must be omitted
+ */
+export function deriveDomainFromOrigin(origin?: string): string | undefined {
+  if (!origin) {
+    return undefined;
+  }
+  try {
+    const { origin: parsedOrigin } = new URL(origin);
+    // Opaque origins (e.g. "null", non-hierarchical schemes) serialise to
+    // "null" — treat those as absent rather than forwarding a placeholder.
+    if (!parsedOrigin || parsedOrigin === "null") {
+      return undefined;
+    }
+    return parsedOrigin;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Attach the server-derived `domain` to an event in place, when it can be
+ * derived from the request's `Origin` header. When the header is absent or
+ * unparseable the event is left untouched so `domain` stays omitted.
+ *
+ * @param event the event object forwarded to the queue
+ * @param origin the raw `Origin` request header, if present
+ */
+export function attachDomainFromOrigin(
+  event: Record<string, any>,
+  origin?: string,
+): void {
+  const domain = deriveDomainFromOrigin(origin);
+  if (domain !== undefined) {
+    event.domain = domain;
+  }
+}
+
 export function generateResponseStatus({
   path,
   method,
