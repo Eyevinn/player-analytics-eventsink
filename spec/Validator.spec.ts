@@ -157,7 +157,7 @@ describe('JSONValidator', () => {
       payload: {
         live: false,
         contentTitle: 'Test Video',
-        customMetadataId: '42',       // custom string field
+        customLabel: 'preview',       // custom string field
         customCategory: 'sports',     // custom string field
         isPromoted: true,             // custom boolean field
       },
@@ -165,8 +165,8 @@ describe('JSONValidator', () => {
     expect(validator.validateEvent(metadataWithCustomFields).valid).toBe(true);
   });
 
-  it('should reject metadata events with integer custom fields (spec limitation)', () => {
-    const metadataWithIntegerField = {
+  it('should accept metadata events with a numeric customMetadataId (EPAS v0.6.0)', () => {
+    const metadataWithNumericId = {
       event: 'metadata',
       sessionId: 'test-session',
       timestamp: 1000,
@@ -175,11 +175,12 @@ describe('JSONValidator', () => {
       payload: {
         live: false,
         contentTitle: 'Test Video',
-        customMetadataId: 42,         // integer — NOT allowed by EPAS v0.5.0 schema
+        customMetadataId: 42,         // numeric — now a first-class field in EPAS v0.6.0
       },
     };
-    // EPAS v0.5.0 additionalProperties only allows ["string", "boolean"]
-    // Integers must be sent as strings (e.g., "42") to pass validation
-    expect(validator.validateEvent(metadataWithIntegerField).valid).toBe(false);
+    // EPAS v0.6.0 defines an OPTIONAL numeric `customMetadataId` on the
+    // metadata payload (and broadens additionalProperties to include numbers),
+    // so a numeric value now validates instead of being rejected.
+    expect(validator.validateEvent(metadataWithNumericId).valid).toBe(true);
   });
 });

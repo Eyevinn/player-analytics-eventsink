@@ -101,6 +101,54 @@ describe('event-sink module', () => {
     }
   });
 
+  it('forwards a metadata event carrying customMetadataId unchanged to the queue', async () => {
+    // End-to-end proof for #72: a metadata event with the optional numeric
+    // customMetadataId must (a) pass validation against the pinned EPAS
+    // schema and (b) reach the queue adapter with the field preserved —
+    // eventsink forwards events unchanged; it never strips fields.
+    let forwardedEvent: any = null;
+    spyOn(SqsQueueAdapter.prototype, 'pushToQueue').and.callFake(function (
+      forwarded: any,
+    ) {
+      forwardedEvent = forwarded;
+      return Promise.resolve({
+        MessageId: '12345678-4444-5555-6666-111122223333',
+      });
+    });
+
+    const metadataEvent = {
+      event: 'metadata',
+      sessionId: '123-214-234',
+      timestamp: -1,
+      playhead: -1,
+      duration: -1,
+      payload: {
+        live: false,
+        contentTitle: 'My Content',
+        customMetadataId: 4242,
+      },
+    };
+
+    const event = request;
+    event.body = JSON.stringify(metadataEvent);
+    sqsMock.on(SendMessageCommand).resolves({
+      MessageId: '12345678-4444-5555-6666-111122223333',
+    });
+
+    const response = await Lambda.handler(event);
+    if (response.statusCode === 400) console.log(response.body);
+
+    // Validation passed end-to-end.
+    expect(response.statusCode).toEqual(200);
+    expect(response.body).toContain('"valid":true');
+
+    // The exact object handed to the queue adapter still carries the field,
+    // with its numeric value intact (no stripping, no coercion).
+    expect(forwardedEvent).not.toBeNull();
+    expect(forwardedEvent.event).toEqual('metadata');
+    expect(forwardedEvent.payload.customMetadataId).toEqual(4242);
+  });
+
   it('can validate an incoming POST request with an invalid payload', async () => {
     spyOn(SqsQueueAdapter.prototype, 'pushToQueue').and.callFake(function () {
       return Promise.resolve({
