@@ -107,8 +107,8 @@ export const expectedPlaybackStartEPAS: EPASEvent[] = [
     event: "playing",
     sessionId: "test-session-123",
     timestamp: 1704067200000,
-    playhead: 0,
-    duration: 0,
+    playhead: -1,
+    duration: -1,
   },
 ];
 
@@ -117,8 +117,8 @@ export const expectedStallEPAS: EPASEvent[] = [
     event: "buffering",
     sessionId: "test-session-123",
     timestamp: 1704067210000,
-    playhead: 0,
-    duration: 0,
+    playhead: -1,
+    duration: -1,
   },
 ];
 
@@ -127,8 +127,8 @@ export const expectedErrorEPAS: EPASEvent[] = [
     event: "error",
     sessionId: "test-session-123",
     timestamp: 1704067220000,
-    playhead: 0,
-    duration: 0,
+    playhead: -1,
+    duration: -1,
     payload: {
       category: "NETWORK",
       code: "404",
@@ -143,8 +143,8 @@ export const expectedSeekEPAS: EPASEvent[] = [
     event: "seeking",
     sessionId: "test-session-123",
     timestamp: 1704067230000,
-    playhead: 0,
-    duration: 0,
+    playhead: -1,
+    duration: -1,
   },
 ];
 
@@ -153,8 +153,8 @@ export const expectedSpeedChangeEPAS: EPASEvent[] = [
     event: "heartbeat",
     sessionId: "test-session-123",
     timestamp: 1704067240000,
-    playhead: 0,
-    duration: 0,
+    playhead: -1,
+    duration: -1,
     payload: { playbackRate: 2 },
   },
 ];
