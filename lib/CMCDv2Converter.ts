@@ -86,8 +86,10 @@ export class CMCDv2Converter {
     let state = this.sessionStates.get(sessionId);
     if (!state) {
       state = {
-        playhead: 0,
-        duration: 0,
+        // -1 is the EPAS "unknown" sentinel; a real 0 must stay distinguishable
+        // from it until CMCD reports an actual playhead/duration.
+        playhead: -1,
+        duration: -1,
         isBuffering: false,
         lastTimestamp: timestamp,
         playbackRate: session.pr || 1,

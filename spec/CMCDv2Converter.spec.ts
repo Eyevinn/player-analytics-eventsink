@@ -198,6 +198,27 @@ describe("CMCDv2Converter", () => {
     });
   });
 
+  describe("unknown sentinel (-1) initialisation", () => {
+    it("should emit playhead/duration -1 before any object.d duration is reported", () => {
+      // A seek event on a brand-new session, with no object.d ever reported,
+      // must carry the -1 "unknown" sentinel rather than a genuine-looking 0.
+      const events = converter.convert([cmcdv2Seek]);
+
+      expect(events.length).toBe(1);
+      expect(events[0].event).toBe("seeking");
+      expect(events[0].playhead).toBe(-1);
+      expect(events[0].duration).toBe(-1);
+    });
+
+    it("should initialise new session state with playhead/duration -1", () => {
+      converter.convert([cmcdv2Seek]);
+
+      const state = converter.getSessionState("test-session-123");
+      expect(state?.playhead).toBe(-1);
+      expect(state?.duration).toBe(-1);
+    });
+  });
+
   describe("session state management", () => {
     it("should track session state across multiple events", () => {
       converter.convert([cmcdv2PlaybackStart]);
