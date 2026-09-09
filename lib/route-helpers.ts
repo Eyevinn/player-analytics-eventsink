@@ -144,7 +144,7 @@ export function generateInvalidResponseBody(
   errors?: ValidationError[],
 ): responseBody {
   const body: responseBody = {
-    sessionId: event?.sessionId || -1,
+    sessionId: event?.sessionId ?? "",
     message: "Invalid player event",
     valid: false,
   };

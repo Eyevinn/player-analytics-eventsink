@@ -182,7 +182,10 @@ describe('event-sink module', () => {
     expect(response.statusCode).toEqual(400);
     expect(response.statusDescription).toEqual('Bad Request');
     const body = JSON.parse(response.body!);
-    expect(body.sessionId).toEqual(-1);
+    // #86: a genuinely-missing sessionId falls back to an empty string, never
+    // the number -1 — the response contract types this field as a string.
+    expect(body.sessionId).toEqual('');
+    expect(typeof body.sessionId).toEqual('string');
     expect(body.message).toEqual('Invalid player event');
     expect(body.valid).toBe(false);
     expect(body.errors).toBeDefined();
