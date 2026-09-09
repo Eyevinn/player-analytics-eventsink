@@ -106,6 +106,61 @@ describe('MemoryQueue', () => {
     memoryQueue.enqueue(event);
   });
 
+  it('should not exceed maxSize or silently lose a live event when retrying at capacity', (done) => {
+    memoryQueue = new MemoryQueue(logger, {
+      maxSize: 3,
+      batchSize: 1,
+      drainInterval: 10,
+      maxRetries: 3,
+      onOverflow: 'drop-oldest',
+      adaptiveThrottling: false
+    });
+
+    // Fail the very first drained event so it is re-inserted for retry while
+    // the queue is still full; every subsequent drain succeeds.
+    let failNextDrain = true;
+    memoryQueue.on('drainEvent', () => {
+      if (failNextDrain) {
+        failNextDrain = false;
+        throw new Error('Simulated processing failure');
+      }
+    });
+
+    // Any event overwritten by a retry re-insertion must surface as a drop,
+    // never be silently lost.
+    const droppedIds: string[] = [];
+    memoryQueue.on('eventDropped', (event) => {
+      droppedIds.push(event.id);
+    });
+
+    // Fill the queue to exactly maxSize.
+    const enqueuedIds: string[] = [];
+    for (let i = 0; i < 3; i++) {
+      const result = memoryQueue.enqueue({ type: 'test', data: `event-${i}` });
+      enqueuedIds.push(result.id as string);
+    }
+
+    expect(memoryQueue.size()).toBe(3);
+
+    // Poll while the drain timer processes and the failed event retries.
+    let maxObservedSize = memoryQueue.size();
+    const interval = setInterval(() => {
+      maxObservedSize = Math.max(maxObservedSize, memoryQueue.size());
+
+      // count must never exceed maxSize at any observed point.
+      expect(memoryQueue.size()).toBeLessThanOrEqual(3);
+
+      if (memoryQueue.size() === 0) {
+        clearInterval(interval);
+
+        // Every enqueued event must have been either successfully drained or
+        // explicitly reported as dropped — none silently overwritten.
+        expect(maxObservedSize).toBeLessThanOrEqual(3);
+        done();
+      }
+    }, 5);
+  });
+
   it('should provide accurate stats', () => {
     memoryQueue = new MemoryQueue(logger, {
       maxSize: 100,

@@ -283,6 +283,12 @@ export default class MemoryQueue extends EventEmitter {
     queuedEvent.retryCount++;
 
     if (queuedEvent.retryCount <= this.options.maxRetries) {
+      // Guard capacity the same way enqueue() does, so a retry re-insertion
+      // can never push count past maxSize or overwrite a live slot.
+      if (this.count >= this.options.maxSize) {
+        this.handleOverflow();
+      }
+
       // Re-insert at head of circular buffer for retry
       this.head = (this.head - 1 + this.options.maxSize) % this.options.maxSize;
       this.buffer[this.head] = queuedEvent;
