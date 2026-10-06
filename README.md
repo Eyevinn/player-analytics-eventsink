@@ -38,7 +38,54 @@ SQS_QUEUE_URL = "<your-sqs-queue-url>"
 REDIS_HOST = "<default localhost>"
 REDIS_PORT = "<default 6379>"
 REDIS_PASSWORD = "<default empty>"
+
+# Geo-IP enrichment (optional, OFF by default)
+GEOIP_ENABLED = "<true to resolve country/city from the request IP; default off>"
+GEOIP_DB_PATH = "<path to the offline geo-IP database file (MMDB format)>"
+# Trust X-Forwarded-For so the real client IP can be read behind a proxy / load
+# balancer. One of: false (default) | true | <integer hop count> | a
+# comma-separated list of trusted proxy IPs/CIDRs.
+TRUST_PROXY = "<false | true | integer-hops | ip/cidr,ip/cidr>"
 ```
+
+## Geo-IP Enrichment
+
+The eventsink can resolve a coarse geo location — `country` (ISO 3166-1 alpha-2,
+e.g. `SE`) and `city` — from the client IP of each request and attach it to
+`metadata` events before they are queued. The fields are server-derived (the
+player/SDKs never send them) and are defined as optional fields on the metadata
+event in the [EPAS specification](https://github.com/Eyevinn/player-analytics-specification).
+
+The feature is **off by default** and is enabled with `GEOIP_ENABLED=true`.
+
+### How it works
+
+- Lookups use an **offline geo-IP database file in the MMDB binary format**,
+  read locally and in-process. The client IP is **never sent to any third
+  party**. Point `GEOIP_DB_PATH` at the database file; the reader is the
+  MIT-licensed `mmdb-lib` package. You must supply an open-licensed MMDB
+  database yourself (mount it into the container or add it to the image) and
+  comply with that database's own license and attribution requirements — none
+  is bundled with this repository.
+- Behind a reverse proxy or load balancer the real client IP is in the
+  `X-Forwarded-For` header. Set `TRUST_PROXY` to your proxy topology so Fastify
+  resolves `request.ip` from that header. It is `false` by default; leaving it
+  unset means the socket peer (the proxy) would be looked up instead of the
+  viewer.
+- `country`/`city` are attached **only** to `metadata` events, and only after
+  schema validation, so enrichment never changes whether an event is accepted.
+
+### Privacy / GDPR note
+
+When geo enrichment is enabled, the eventsink processes the client IP solely to
+derive a coarse location. The IP is handled transiently in memory as lookup
+input only — it is **never stored, logged, or forwarded**; only the resolved
+`country`/`city` are retained. If the IP is private, loopback, reserved, or
+cannot be resolved, both fields are omitted entirely (never emptied or
+placeholdered). An operator who enables this feature is the data controller for
+that processing and is responsible for having a lawful basis and for disclosing
+it in their own privacy policy. The feature is off by default and can be turned
+off at any time by unsetting `GEOIP_ENABLED`.
 
 ## Memory Queue
 

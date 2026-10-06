@@ -10,7 +10,10 @@ import {
   generateCMCDv2ResponseBody,
   generateCMCDv2ErrorBody,
   attachDomainFromOrigin,
+  attachGeoFromIp,
+  parseTrustProxyEnv,
 } from "../lib/route-helpers";
+import { createGeoIpResolver, GeoIpResolver } from "../lib/GeoIpResolver";
 import Sender from "../lib/Sender";
 import Logger from "../logging/logger";
 import {
@@ -22,11 +25,18 @@ import { CMCDv2Parser } from "../lib/CMCDv2Parser";
 import { CMCDv2Converter, EPASEvent } from "../lib/CMCDv2Converter";
 import { CMCDv2RequestBody } from "../types/cmcdv2";
 
-export const fastify = require("fastify")();
+// `trustProxy` is driven by config (default off) so `X-Forwarded-For` is only
+// honoured once an operator has declared their proxy topology — trusting it
+// unconditionally would let a client spoof its source IP.
+export const fastify = require("fastify")({
+  trustProxy: parseTrustProxyEnv(process.env.TRUST_PROXY),
+});
 const validator = new Validator(Logger);
 const sender = new Sender(Logger);
 const cmcdParser = new CMCDv2Parser(Logger);
 const cmcdConverter = new CMCDv2Converter(Logger);
+// Built once at startup from config; `undefined` when geo enrichment is off.
+const geoIpResolver: GeoIpResolver | undefined = createGeoIpResolver(Logger);
 
 fastify.options("/", (request, reply) => {
   reply
@@ -68,6 +78,10 @@ fastify.post("/", async (request, reply) => {
     // attach it before forwarding, so it reaches the queue for downstream
     // storage. Omitted entirely when the header is absent (see spec contract).
     attachDomainFromOrigin(body, request.headers.origin);
+    // Server-derive coarse geo (country/city) from the client IP for metadata
+    // events, after validation so enrichment never affects event validity. The
+    // raw IP is only transient lookup input — never stored, logged, or queued.
+    attachGeoFromIp(body, request.ip, geoIpResolver);
     const senderTs = Date.now();
     try {
       const useMemoryQueue = process.env.DISABLE_MEMORY_QUEUE !== "true";
@@ -196,6 +210,10 @@ fastify.post("/cmcd", async (request, reply) => {
 
       if (epasValidation.valid) {
         try {
+          // Enrich converted metadata events with coarse geo from the client
+          // IP, after validation (same ordering as the `/` path). No-op for
+          // non-metadata events and when enrichment is off.
+          attachGeoFromIp(epasEvent, request.ip, geoIpResolver);
           if (useMemoryQueue) {
             await sender.send(epasEvent);
           } else {

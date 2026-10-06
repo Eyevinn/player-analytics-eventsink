@@ -7,6 +7,7 @@ import {
   CMCDv2EventResult,
   CMCDv2ErrorResponse,
 } from "../types/interfaces";
+import { GeoIpResolver, isPrivateOrReservedIp } from "./GeoIpResolver";
 
 import packageJson from "@eyevinn/player-analytics-specification/package.json";
 
@@ -96,6 +97,87 @@ export function attachDomainFromOrigin(
   if (domain !== undefined) {
     event.domain = domain;
   }
+}
+
+/**
+ * Attach the server-derived `country`/`city` to a metadata event in place,
+ * resolved from the request's client IP. Mirrors {@link attachDomainFromOrigin}:
+ * derive → attach-in-place → omit on unknown.
+ *
+ * The raw IP is used only as transient input to the (in-process) lookup — it is
+ * never written to the event, never logged, and never forwarded. The fields are
+ * omitted entirely (never set to an empty string or a placeholder) when:
+ *  - enrichment is disabled (no resolver),
+ *  - the event is not a `metadata` event (only metadata carries these per the
+ *    EPAS spec),
+ *  - the IP is missing, private, loopback, link-local, or otherwise reserved,
+ *  - the lookup does not resolve the address.
+ *
+ * Call this AFTER schema validation (as the caller does for `domain` on the
+ * metadata path) so enrichment never affects the validity of the incoming
+ * event.
+ *
+ * @param event the event object forwarded to the queue
+ * @param ip the request's client IP (Fastify `request.ip`), if any
+ * @param resolver the geo-IP resolver, or `undefined` when enrichment is off
+ */
+export function attachGeoFromIp(
+  event: Record<string, any>,
+  ip: string | undefined,
+  resolver?: GeoIpResolver,
+): void {
+  if (!resolver) {
+    return;
+  }
+  if (!event || event.event !== "metadata") {
+    return;
+  }
+  if (!ip || isPrivateOrReservedIp(ip)) {
+    return;
+  }
+  const location = resolver.lookup(ip);
+  if (!location) {
+    return;
+  }
+  if (location.country) {
+    event.country = location.country;
+  }
+  if (location.city) {
+    event.city = location.city;
+  }
+}
+
+/**
+ * Parse the `TRUST_PROXY` env var into a value accepted by Fastify's
+ * `trustProxy` option. Defaults to `false` (the current behaviour) so
+ * `X-Forwarded-For` is ignored until an operator declares their proxy topology.
+ *
+ * Accepted forms:
+ *  - unset/empty/"false" → `false` (do not trust the header),
+ *  - "true" → `true` (trust the header unconditionally),
+ *  - an integer → that many trusted proxy hops,
+ *  - a comma-separated list → trusted proxy IP/CIDR allow-list.
+ */
+export function parseTrustProxyEnv(
+  raw?: string,
+): boolean | number | string[] {
+  if (!raw || raw.trim() === "") {
+    return false;
+  }
+  const value = raw.trim();
+  if (value.toLowerCase() === "true") {
+    return true;
+  }
+  if (value.toLowerCase() === "false") {
+    return false;
+  }
+  if (/^\d+$/.test(value)) {
+    return parseInt(value, 10);
+  }
+  return value
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
 }
 
 export function generateResponseStatus({
