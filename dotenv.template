@@ -4,3 +4,10 @@ QUEUE_TYPE = <SQS | beanstalkd | redis>
 HEARTBEAT_INTERVAL = <heartbeat-interval>
 SQS_MAX_SOCKETS = <optional-max-sockets-for-sqs-default-50>
 
+# Geo-IP enrichment (optional, OFF by default)
+GEOIP_ENABLED = <true to resolve country/city from the request IP; default off>
+GEOIP_DB_PATH = <path to the offline geo-IP database file (MMDB format)>
+# Trust X-Forwarded-For (needed to read the real client IP behind a proxy/LB).
+# false (default) | true | <hop-count> | <comma-separated proxy IP/CIDR list>
+TRUST_PROXY = <false | true | integer-hops | ip/cidr,ip/cidr>
+
