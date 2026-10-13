@@ -12,6 +12,7 @@ import {
   attachDomainFromOrigin,
   attachGeoFromIp,
   parseTrustProxyEnv,
+  eventsinkVersion,
 } from "../lib/route-helpers";
 import { createGeoIpResolver, GeoIpResolver } from "../lib/GeoIpResolver";
 import Sender from "../lib/Sender";
@@ -49,6 +50,7 @@ fastify.get("/health", (request, reply) => {
   const memoryQueueStats = sender.getMemoryQueueStats();
   const health = {
     status: "ok",
+    version: eventsinkVersion,
     timestamp: new Date().toISOString(),
     memoryQueue: memoryQueueStats
       ? {
@@ -62,7 +64,10 @@ fastify.get("/health", (request, reply) => {
 
   reply
     .status(200)
-    .headers({ "Content-Type": "application/json" })
+    .headers({
+      "Content-Type": "application/json",
+      "X-Eventsink-Version": eventsinkVersion || "n/a",
+    })
     .send(health);
 });
 

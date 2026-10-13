@@ -1,6 +1,39 @@
 import { fastify } from '../services/fastify';
+import eventsinkPackageJson from '../package.json';
+
+const EVENTSINK_VERSION = eventsinkPackageJson.version;
 
 describe('Fastify server', () => {
+  describe('eventsink version reporting', () => {
+    it('GET /health includes the eventsink package.json version in the body', async () => {
+      const response = await fastify.inject({ method: 'GET', url: '/health' });
+      expect(response.statusCode).toBe(200);
+      const body = JSON.parse(response.body);
+      expect(body.version).toEqual(EVENTSINK_VERSION);
+    });
+
+    it('GET /health carries the X-Eventsink-Version header', async () => {
+      const response = await fastify.inject({ method: 'GET', url: '/health' });
+      expect(response.headers['x-eventsink-version']).toEqual(EVENTSINK_VERSION);
+    });
+
+    it('OPTIONS / carries the X-Eventsink-Version header', async () => {
+      const response = await fastify.inject({ method: 'OPTIONS', url: '/' });
+      expect(response.headers['x-eventsink-version']).toEqual(EVENTSINK_VERSION);
+    });
+
+    it('the catch-all 404 route carries the X-Eventsink-Version header', async () => {
+      const response = await fastify.inject({ method: 'GET', url: '/unknown-path' });
+      expect(response.statusCode).toBe(404);
+      expect(response.headers['x-eventsink-version']).toEqual(EVENTSINK_VERSION);
+    });
+
+    it('OPTIONS /cmcd carries the X-Eventsink-Version header', async () => {
+      const response = await fastify.inject({ method: 'OPTIONS', url: '/cmcd' });
+      expect(response.headers['x-eventsink-version']).toEqual(EVENTSINK_VERSION);
+    });
+  });
+
   it('should validate allowed origin if CORS_ALLOWED_ORIGINS is defined', async () => {
     process.env.CORS_ALLOWED_ORIGINS = 'https://test.domain.net, http://test.domain.net';
     const response = await fastify.inject({
