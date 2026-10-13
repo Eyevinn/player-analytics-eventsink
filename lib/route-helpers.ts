@@ -10,8 +10,13 @@ import {
 import { GeoIpResolver, isPrivateOrReservedIp } from "./GeoIpResolver";
 
 import packageJson from "@eyevinn/player-analytics-specification/package.json";
+import eventsinkPackageJson from "../package.json";
 
 const epasVersion = packageJson.version;
+
+// The eventsink's own package version — distinct from `epasVersion`, which is
+// the bundled spec package version reported via `X-EPAS-Version` (see #24).
+export const eventsinkVersion = eventsinkPackageJson.version;
 
 const responseHeaders = {
   "Content-Type": "application/json",
@@ -19,6 +24,7 @@ const responseHeaders = {
     "Content-Type, Origin, X-EPAS-Event, X-EPAS-Version",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "X-EPAS-Version": epasVersion || "n/a",
+  "X-Eventsink-Version": eventsinkVersion || "n/a",
 };
 
 export function generateResponseHeaders(origin?: string) {
