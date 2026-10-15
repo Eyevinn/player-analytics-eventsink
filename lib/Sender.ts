@@ -1,6 +1,19 @@
 import winston from "winston";
 import MemoryQueue from "./MemoryQueue";
 
+/**
+ * Raised by {@link Sender.send} when the in-memory queue is at capacity and the
+ * configured overflow strategy refuses the event. The HTTP layer maps this to a
+ * 503 so clients (SDKs) can retry — the event is never silently accepted behind
+ * a 200 and later dropped.
+ */
+export class QueueFullError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "QueueFullError";
+  }
+}
+
 export default class Sender {
   logger: winston.Logger;
   private static queueAdapterCache: Map<string, any> = new Map();
@@ -76,7 +89,7 @@ export default class Sender {
         : 50,
       drainInterval: process.env.MEMORY_QUEUE_DRAIN_INTERVAL
         ? parseInt(process.env.MEMORY_QUEUE_DRAIN_INTERVAL, 10)
-        : 2000,
+        : 100,
       maxRetries: process.env.MEMORY_QUEUE_MAX_RETRIES
         ? parseInt(process.env.MEMORY_QUEUE_MAX_RETRIES, 10)
         : 3,
@@ -84,15 +97,15 @@ export default class Sender {
         (process.env.MEMORY_QUEUE_OVERFLOW_STRATEGY as
           | "drop-oldest"
           | "drop-newest"
-          | "reject") || "drop-oldest",
+          | "reject") || "reject",
       eventDelayMs: process.env.MEMORY_QUEUE_EVENT_DELAY_MS
         ? parseInt(process.env.MEMORY_QUEUE_EVENT_DELAY_MS, 10)
-        : 20,
+        : 0,
       adaptiveThrottling:
         process.env.MEMORY_QUEUE_ADAPTIVE_THROTTLING !== "false",
       maxConcurrentEvents: process.env.MEMORY_QUEUE_MAX_CONCURRENT
         ? parseInt(process.env.MEMORY_QUEUE_MAX_CONCURRENT, 10)
-        : 3,
+        : 10,
     };
 
     this.memoryQueue = new MemoryQueue(this.logger, options);
@@ -158,30 +171,47 @@ export default class Sender {
    */
   async send(event: Object): Promise<Object> {
     if (this.useMemoryQueue && this.memoryQueue) {
+      let result: {
+        success: boolean;
+        id?: string;
+        error?: string;
+        overflow?: boolean;
+      };
       try {
-        const result = this.memoryQueue.enqueue(event);
-        if (result.success) {
-          this.logger.debug(
-            `Event ${result.id} added to memory queue, size: ${this.memoryQueue.size()}`,
-          );
-          return {
-            message: "Event queued for processing",
-            memoryQueueId: result.id,
-            queueSize: this.memoryQueue.size(),
-          };
-        } else {
-          this.logger.error(
-            `Failed to add event to memory queue: ${result.error}`,
-          );
-          return { message: result.error || "Failed to queue event" };
-        }
+        result = this.memoryQueue.enqueue(event);
       } catch (error) {
+        // Unexpected memory-queue failure (not an expected overflow) — fall back
+        // to a direct queue send so a transient internal error does not lose data.
         this.logger.error(
           "Memory queue error, falling back to direct send:",
           error,
         );
         return await this.sendToActualQueue(event);
       }
+
+      if (result.success) {
+        this.logger.debug(
+          `Event ${result.id} added to memory queue, size: ${this.memoryQueue.size()}`,
+        );
+        return {
+          message: "Event queued for processing",
+          memoryQueueId: result.id,
+          queueSize: this.memoryQueue.size(),
+        };
+      }
+
+      if (result.overflow) {
+        // Queue is at capacity and the overflow strategy refuses the event.
+        // Surface this so the HTTP layer returns 503 (clients can retry) instead
+        // of silently accepting and later dropping the event behind a 200.
+        this.logger.warn(
+          `Memory queue full, rejecting event so caller can retry: ${result.error}`,
+        );
+        throw new QueueFullError(result.error || "Memory queue is full");
+      }
+
+      this.logger.error(`Failed to add event to memory queue: ${result.error}`);
+      return { message: result.error || "Failed to queue event" };
     } else {
       return await this.sendToActualQueue(event);
     }

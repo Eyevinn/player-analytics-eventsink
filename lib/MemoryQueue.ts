@@ -31,6 +31,10 @@ export default class MemoryQueue extends EventEmitter {
   private drainTimer?: NodeJS.Timeout;
   private isProcessing = false;
   private nextId = 1;
+  // Cumulative number of events discarded because of overflow (drop-oldest
+  // evictions and retry re-insertions that could not be made room for). Exposed
+  // via getStats()/health so overflow is observable rather than silent.
+  private droppedCount = 0;
   private activeDrainPromises = new Set<Promise<void>>();
   private recentResponseTimes: number[] = [];
   private currentDelayMs = 0;
@@ -41,12 +45,19 @@ export default class MemoryQueue extends EventEmitter {
     this.options = {
       maxSize: options.maxSize ?? 20000,
       batchSize: options.batchSize ?? 50,
-      drainInterval: options.drainInterval ?? 2000,
+      // Near-continuous drain by default (was 2000ms) so out-of-the-box
+      // throughput is not capped at batchSize / 2s. Still env-overridable.
+      drainInterval: options.drainInterval ?? 100,
       maxRetries: options.maxRetries ?? 3,
-      onOverflow: options.onOverflow ?? "drop-oldest",
-      eventDelayMs: options.eventDelayMs ?? 20,
+      // Fail loud by default: when the queue is full, reject the incoming event
+      // (surfaced as HTTP 503) instead of silently dropping accepted events
+      // behind a 200. drop-oldest/drop-newest remain available as opt-ins.
+      onOverflow: options.onOverflow ?? "reject",
+      // No artificial per-event delay by default (was 20ms); adaptive throttling
+      // still raises the delay on its own if the backend is slow.
+      eventDelayMs: options.eventDelayMs ?? 0,
       adaptiveThrottling: options.adaptiveThrottling ?? true,
-      maxConcurrentEvents: options.maxConcurrentEvents ?? 3,
+      maxConcurrentEvents: options.maxConcurrentEvents ?? 10,
     };
 
     // Initialize circular buffer
@@ -70,9 +81,23 @@ export default class MemoryQueue extends EventEmitter {
     }
   }
 
-  enqueue(event: Object): { success: boolean; id?: string; error?: string } {
+  enqueue(event: Object): {
+    success: boolean;
+    id?: string;
+    error?: string;
+    overflow?: boolean;
+  } {
     if (this.count >= this.options.maxSize) {
-      this.handleOverflow();
+      const madeRoom = this.handleOverflow();
+      if (!madeRoom) {
+        // The configured strategy refuses the incoming event; reject it so the
+        // caller can surface a 503. Nothing already accepted is discarded.
+        return {
+          success: false,
+          error: "Memory queue is full",
+          overflow: true,
+        };
+      }
     }
 
     const queuedEvent: QueuedEvent = {
@@ -94,26 +119,40 @@ export default class MemoryQueue extends EventEmitter {
     return { success: true, id: queuedEvent.id };
   }
 
-  private handleOverflow(): void {
+  /**
+   * React to the buffer being at capacity when a new event arrives.
+   *
+   * @returns `true` when a slot was freed (drop-oldest) and the caller may
+   *   proceed to insert the incoming event; `false` when the configured
+   *   strategy refuses the incoming event, so the caller must reject it (the
+   *   HTTP layer turns this into a 503). No already-accepted event is discarded
+   *   in the `false` case.
+   */
+  private handleOverflow(): boolean {
     switch (this.options.onOverflow) {
-      case "drop-oldest":
+      case "drop-oldest": {
         // O(1) circular buffer dequeue for overflow
         const dropped = this.buffer[this.head];
         if (dropped) {
           this.buffer[this.head] = undefined;
           this.head = (this.head + 1) % this.options.maxSize;
           this.count--;
+          this.droppedCount++;
           this.logger.warn(
-            `Memory queue overflow: dropped oldest event ${dropped.id}`,
+            `Memory queue overflow: dropped oldest event ${dropped.id} (total dropped: ${this.droppedCount})`,
           );
           this.emit("eventDropped", dropped);
         }
-        break;
+        return true;
+      }
       case "drop-newest":
-        this.logger.warn("Memory queue overflow: rejecting newest event");
-        throw new Error("Memory queue is full");
       case "reject":
-        throw new Error("Memory queue is full");
+      default:
+        // Refuse the incoming event; keep what is already queued intact.
+        this.logger.warn(
+          "Memory queue overflow: queue full, rejecting incoming event",
+        );
+        return false;
     }
   }
 
@@ -286,7 +325,18 @@ export default class MemoryQueue extends EventEmitter {
       // Guard capacity the same way enqueue() does, so a retry re-insertion
       // can never push count past maxSize or overwrite a live slot.
       if (this.count >= this.options.maxSize) {
-        this.handleOverflow();
+        const madeRoom = this.handleOverflow();
+        if (!madeRoom) {
+          // No room to re-queue the retry and the strategy forbids eviction.
+          // Surface it as a dropped event so it is counted/observable rather
+          // than silently overwriting a live slot.
+          this.droppedCount++;
+          this.logger.warn(
+            `Event ${queuedEvent.id} dropped: queue full, cannot re-queue for retry (total dropped: ${this.droppedCount})`,
+          );
+          this.emit("eventDropped", queuedEvent);
+          return;
+        }
       }
 
       // Re-insert at head of circular buffer for retry
@@ -325,6 +375,8 @@ export default class MemoryQueue extends EventEmitter {
     return {
       queueSize: this.count,
       maxSize: this.options.maxSize,
+      droppedCount: this.droppedCount,
+      overflowStrategy: this.options.onOverflow,
       isProcessing: this.isProcessing,
       oldestEventAge: oldestEvent ? Date.now() - oldestEvent.timestamp : 0,
       activeConcurrentOperations: this.activeDrainPromises.size,

@@ -33,25 +33,30 @@ MEMORY_QUEUE_MAX_SIZE=10000
 # Number of events to process per batch (default: 50)
 MEMORY_QUEUE_BATCH_SIZE=50
 
-# Interval between batch processing in milliseconds (default: 2000)
-MEMORY_QUEUE_DRAIN_INTERVAL=2000
+# Interval between batch processing in milliseconds (default: 100)
+MEMORY_QUEUE_DRAIN_INTERVAL=100
 
 # Maximum retry attempts for failed events (default: 3)
 MEMORY_QUEUE_MAX_RETRIES=3
 
-# Overflow strategy when queue is full (default: drop-oldest)
+# Overflow strategy when queue is full (default: reject)
 # Options: drop-oldest, drop-newest, reject
-MEMORY_QUEUE_OVERFLOW_STRATEGY=drop-oldest
+# With the default "reject" the event sink answers HTTP 503 when the in-memory
+# queue is full, so clients can retry and no accepted event is dropped. Use
+# "drop-oldest" to opt back into the previous drop-behind-200 behaviour.
+MEMORY_QUEUE_OVERFLOW_STRATEGY=reject
 
 # Throttling and Rate Limiting Configuration
-# Delay between individual events within a batch in milliseconds (default: 20)
-MEMORY_QUEUE_EVENT_DELAY_MS=20
+# Delay between individual events within a batch in milliseconds (default: 0)
+# Adaptive throttling (below) still raises this on its own when the backend is
+# slow; the default is 0 so out-of-the-box throughput is not artificially capped.
+MEMORY_QUEUE_EVENT_DELAY_MS=0
 
 # Enable adaptive throttling based on response times (default: true)
 MEMORY_QUEUE_ADAPTIVE_THROTTLING=true
 
-# Maximum concurrent drain operations (default: 3)
-MEMORY_QUEUE_MAX_CONCURRENT=3
+# Maximum concurrent drain operations (default: 10)
+MEMORY_QUEUE_MAX_CONCURRENT=10
 ```
 
 ## Benefits
@@ -81,11 +86,11 @@ The memory queue includes several mechanisms to prevent overwhelming the underly
 
 ### 3. Throttling Behavior
 
-- **Initial Delay**: 20ms between events (configurable)
+- **Initial Delay**: 0ms between events by default (configurable via `MEMORY_QUEUE_EVENT_DELAY_MS`)
 - **High Response Time**: Delays increase by 5ms when avg response > 1000ms (max 100ms)
 - **Good Performance**: Delays decrease by 2ms when avg response < 200ms
 - **Error Conditions**: Delays increase by 20ms on errors (max 200ms)
-- **Adaptive Range**: 20ms (base) to 200ms (maximum under stress)
+- **Adaptive Range**: base (0ms by default) to 200ms (maximum under stress)
 
 ## Monitoring
 
@@ -105,6 +110,8 @@ Response includes memory queue statistics:
     "enabled": true,
     "queueSize": 150,
     "maxSize": 10000,
+    "droppedCount": 0,
+    "overflowStrategy": "reject",
     "isProcessing": false,
     "oldestEventAge": 1250,
     "activeConcurrentOperations": 2,
@@ -130,9 +137,13 @@ Response includes memory queue statistics:
 - **Batch Size**: Larger batch sizes improve throughput but increase memory usage and processing latency
 - **Drain Interval**: Lower intervals reduce latency but increase CPU usage
 - **Overflow Strategy**:
-  - `drop-oldest`: Prevents memory issues but may lose older events
-  - `drop-newest`: Preserves older events but rejects new ones when full
-  - `reject`: Fails requests when queue is full, falling back to direct queue operations
+  - `reject` (default): Fails loud when the queue is full — the request path
+    surfaces the overflow and the HTTP layer answers `503`, so clients can retry
+    and no accepted event is dropped
+  - `drop-newest`: Rejects new events when full (same 503 behaviour for the
+    incoming event), preserving what is already queued
+  - `drop-oldest`: Evicts the oldest queued event to admit the newest; keeps
+    memory bounded but loses older events (opt-in, not the default)
 
 ## Graceful Shutdown
 
@@ -148,9 +159,11 @@ When the application receives SIGTERM or SIGINT:
 
 If the memory queue encounters errors:
 
-- Individual event failures fall back to direct queue operations
+- Unexpected (non-overflow) memory-queue errors fall back to direct queue operations
 - Memory queue initialization failures disable the feature and use direct operations
-- Queue overflow (when using `reject` strategy) falls back to direct operations
+- Queue overflow under `reject`/`drop-newest` does **not** fall back to a direct
+  send — it answers `503` so the client retries, rather than silently accepting
+  behind a `200` and dropping data
 
 ## Example Usage
 
