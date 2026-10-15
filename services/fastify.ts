@@ -15,7 +15,7 @@ import {
   eventsinkVersion,
 } from "../lib/route-helpers";
 import { createGeoIpResolver, GeoIpResolver } from "../lib/GeoIpResolver";
-import Sender from "../lib/Sender";
+import Sender, { QueueFullError } from "../lib/Sender";
 import Logger from "../logging/logger";
 import {
   initResponseBody,
@@ -121,6 +121,20 @@ fastify.post("/", async (request, reply) => {
           .send(responseBody);
       }
     } catch (error) {
+      if (error instanceof QueueFullError) {
+        // Memory queue is full: tell the client to back off and retry rather
+        // than silently accepting (200) and later dropping the event.
+        Logger.warn("Memory queue full, returning 503 so client can retry");
+        reply
+          .status(503)
+          .headers(generateResponseHeaders(request.headers.origin))
+          .send({
+            sessionId: body.sessionId || -1,
+            message: "Event queue full, please retry later",
+            valid: false,
+          });
+        return;
+      }
       Logger.error("Sender timeout or error:", error);
       reply
         .status(502)

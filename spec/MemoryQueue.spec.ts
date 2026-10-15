@@ -33,6 +33,53 @@ describe('MemoryQueue', () => {
     expect(memoryQueue.size()).toBe(1);
   });
 
+  it('should reject by default when the queue is full, without dropping any accepted event', () => {
+    // No onOverflow passed -> exercises the new default ("reject").
+    memoryQueue = new MemoryQueue(logger, {
+      maxSize: 2,
+      drainInterval: 10000
+    });
+
+    let droppedEvent: any = null;
+    memoryQueue.on('eventDropped', (event) => {
+      droppedEvent = event;
+    });
+
+    const r1 = memoryQueue.enqueue({ type: 'test', data: '1' });
+    const r2 = memoryQueue.enqueue({ type: 'test', data: '2' });
+    const r3 = memoryQueue.enqueue({ type: 'test', data: '3' });
+
+    expect(r1.success).toBe(true);
+    expect(r2.success).toBe(true);
+
+    // The third enqueue is rejected (not accepted) and flagged as overflow so
+    // the caller can surface a 503.
+    expect(r3.success).toBe(false);
+    expect(r3.overflow).toBe(true);
+    expect(r3.id).toBeUndefined();
+
+    // No accepted event was dropped and the queue still holds the first two.
+    expect(droppedEvent).toBeNull();
+    expect(memoryQueue.size()).toBe(2);
+    expect(memoryQueue.getStats().droppedCount).toBe(0);
+  });
+
+  it('should report overflow strategy and cumulative dropped count in stats', () => {
+    memoryQueue = new MemoryQueue(logger, {
+      maxSize: 1,
+      onOverflow: 'drop-oldest',
+      drainInterval: 10000
+    });
+
+    memoryQueue.enqueue({ type: 'test', data: '1' });
+    memoryQueue.enqueue({ type: 'test', data: '2' }); // evicts #1
+    memoryQueue.enqueue({ type: 'test', data: '3' }); // evicts #2
+
+    const stats = memoryQueue.getStats();
+    expect(stats.overflowStrategy).toBe('drop-oldest');
+    expect(stats.droppedCount).toBe(2);
+  });
+
   it('should handle overflow by dropping oldest events', () => {
     memoryQueue = new MemoryQueue(logger, {
       maxSize: 2,
