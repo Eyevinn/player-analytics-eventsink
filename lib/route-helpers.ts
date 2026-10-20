@@ -249,6 +249,10 @@ export function generateInitResponseBody(
     sessionId: event.sessionId || uuidv4(),
     heartbeatInterval:
       event.heartbeatInterval || process.env.HEARTBEAT_INTERVAL || 5000,
+    // Report the bundled spec package version in the body (not only the
+    // `X-EPAS-Version` header), since that header is not readable cross-origin
+    // without an Access-Control-Expose-Headers allow-list (see #107).
+    epasVersion: epasVersion || "n/a",
   };
 }
 

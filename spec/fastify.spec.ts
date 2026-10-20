@@ -1,7 +1,9 @@
 import { fastify } from '../services/fastify';
 import eventsinkPackageJson from '../package.json';
+import epasSpecPackageJson from '@eyevinn/player-analytics-specification/package.json';
 
 const EVENTSINK_VERSION = eventsinkPackageJson.version;
+const EPAS_SPEC_VERSION = epasSpecPackageJson.version as string;
 
 describe('Fastify server', () => {
   describe('eventsink version reporting', () => {
@@ -48,6 +50,28 @@ describe('Fastify server', () => {
       expect(response.headers['vary']).toEqual('Origin');
     }
     process.env.CORS_ALLOWED_ORIGINS = '';
+  });
+
+  describe('POST / (init event)', () => {
+    it('returns epasVersion (bundled spec version) in the init response body, leaving sessionId and heartbeatInterval unchanged', async () => {
+      const response = await fastify.inject({
+        method: 'POST',
+        url: '/',
+        headers: { 'content-type': 'application/json' },
+        payload: {
+          event: 'init',
+          sessionId: '123-214-234',
+          timestamp: -1,
+          playhead: -1,
+          duration: -1,
+        },
+      });
+      expect(response.statusCode).toBe(200);
+      const body = JSON.parse(response.body);
+      expect(body.epasVersion).toEqual(EPAS_SPEC_VERSION);
+      expect(body.sessionId).toEqual('123-214-234');
+      expect(body.heartbeatInterval).toEqual(5000);
+    });
   });
 
   describe('POST / (invalid event)', () => {

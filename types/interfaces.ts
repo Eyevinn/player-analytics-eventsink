@@ -3,6 +3,7 @@ import winston from "winston";
 export interface initResponseBody {
   sessionId: string;
   heartbeatInterval: number;
+  epasVersion: string;
 }
 
 export interface responseBody {
