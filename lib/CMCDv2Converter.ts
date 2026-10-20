@@ -99,8 +99,8 @@ export class CMCDv2Converter {
 
     // Update state from request data
     if (cmcd.object?.d) {
-      // Duration in CMCD is in ms, EPAS uses seconds
-      state.duration = cmcd.object.d / 1000;
+      // Duration in CMCD is in milliseconds; EPAS /cmcd events keep it in ms.
+      state.duration = cmcd.object.d;
     }
 
     // Estimate playhead from buffer length and time elapsed

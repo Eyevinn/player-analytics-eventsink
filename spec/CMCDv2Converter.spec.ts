@@ -184,17 +184,17 @@ describe("CMCDv2Converter", () => {
   });
 
   describe("duration conversion", () => {
-    it("should convert duration from ms to seconds", () => {
+    it("should emit duration in milliseconds (object.d passed through unchanged)", () => {
       const cmcdWithDuration = {
         session: testSession,
-        object: { d: 4000 }, // 4000ms = 4s
+        object: { d: 4000 }, // 4000ms stays 4000 for /cmcd events
         event: { e: "ps" as const, ts: Date.now() },
       };
 
       const events = converter.convert([cmcdWithDuration]);
       const playingEvent = events.find((e) => e.event === "playing");
 
-      expect(playingEvent?.duration).toBe(4);
+      expect(playingEvent?.duration).toBe(4000);
     });
   });
 
