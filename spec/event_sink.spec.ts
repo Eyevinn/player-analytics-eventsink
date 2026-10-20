@@ -7,7 +7,9 @@ import { mockClient } from 'aws-sdk-client-mock';
 import { valid_events, invalid_events } from './events/test_events';
 import { SqsQueueAdapter } from '@eyevinn/player-analytics-shared';
 import { generateResponseHeaders } from '../lib/route-helpers';
+import epasSpecPackageJson from '@eyevinn/player-analytics-specification/package.json';
 
+const epasSpecVersion = epasSpecPackageJson.version as string;
 const sqsMock = mockClient(SQSClient);
 let request: any;
 
@@ -93,6 +95,8 @@ describe('event-sink module', () => {
       if (payload.event === 'init') {
         expect(response.body).toContain('"sessionId":"123-214-234"');
         expect(response.body).toContain('"heartbeatInterval":5000');
+        const initBody = JSON.parse(response.body ?? '{}');
+        expect(initBody.epasVersion).toEqual(epasSpecVersion);
       } else {
         expect(response.body).toContain('"sessionId":"123-214-234"');
         expect(response.body).toContain('"valid":true');
