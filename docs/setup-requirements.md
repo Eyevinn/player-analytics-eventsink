@@ -79,7 +79,7 @@ The setup docs must cover the following, all of which have concrete backing in
 the repo:
 
 ### 3.1 Prerequisites & install
-- Node.js (the `Dockerfile` builds on `node:18-alpine`).
+- Node.js (the `Dockerfile` builds on `node:24-alpine`).
 - Install with `npm ci` / `npm install`.
 - Available scripts (`package.json`): `npm start`
   (`ts-node services/fastify.ts`), `npm test` (jasmine), `npm run build`
