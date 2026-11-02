@@ -183,4 +183,55 @@ describe('JSONValidator', () => {
     // so a numeric value now validates instead of being rejected.
     expect(validator.validateEvent(metadataWithNumericId).valid).toBe(true);
   });
+
+  it('should accept events carrying the optional top-level sdk field (EPAS v0.7.0)', () => {
+    // EPAS v0.7.0 adds an OPTIONAL top-level `sdk: { name, version }` on every
+    // event, used by the clients to declare they emit integer-ms playhead/
+    // duration. The eventsink validator must accept it.
+    const eventWithSdk = {
+      event: 'heartbeat',
+      sessionId: 'test-session',
+      timestamp: 0,
+      playhead: 0,
+      duration: 10,
+      sdk: { name: 'web', version: '1.2.3' },
+    };
+    expect(validator.validateEvent(eventWithSdk).valid).toBe(true);
+  });
+
+  it('should still reject unknown top-level keys other than sdk (EPAS v0.7.0)', () => {
+    // The sdk opt-in must not loosen the schema: an unknown top-level key is
+    // still an additionalProperties violation (eventsink returns 400 with
+    // "must NOT have additional properties").
+    const eventWithBogusKey: any = {
+      event: 'heartbeat',
+      sessionId: 'test-session',
+      timestamp: 0,
+      playhead: 0,
+      duration: 10,
+      sdk: { name: 'web', version: '1.2.3' },
+      notARealTopLevelKey: 'nope',
+    };
+    const result = validator.validateEvent(eventWithBogusKey);
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      const messages = result.errors.map((e) => e.message).join(' ');
+      expect(messages.toLowerCase()).toContain('additional properties');
+      expect(messages).toContain('notARealTopLevelKey');
+    }
+  });
+
+  it('should reject an sdk object missing its required name/version (EPAS v0.7.0)', () => {
+    // sdk itself is additionalProperties:false with required name+version, so
+    // a malformed sdk object is rejected rather than silently accepted.
+    const eventWithBadSdk: any = {
+      event: 'heartbeat',
+      sessionId: 'test-session',
+      timestamp: 0,
+      playhead: 0,
+      duration: 10,
+      sdk: { name: 'web' }, // missing version
+    };
+    expect(validator.validateEvent(eventWithBadSdk).valid).toBe(false);
+  });
 });
