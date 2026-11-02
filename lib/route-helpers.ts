@@ -54,7 +54,7 @@ export function generateResponseHeaders(origin?: string) {
 /**
  * Derive the EPAS `domain` field from a request's HTTP `Origin` header.
  *
- * Per the EPAS specification (player-analytics-specification 0.6.0, server-
+ * Per the EPAS specification (player-analytics-specification 0.7.0, server-
  * populated fields), `domain` is the scheme + host + optional port of the page
  * that produced the event — i.e. the value of the `Origin` header itself
  * (e.g. "https://example.com"). It is server-derived and MUST NOT be trusted as
