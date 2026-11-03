@@ -11,6 +11,7 @@ import {
   generateCMCDv2ErrorBody,
   attachDomainFromOrigin,
   attachGeoFromIp,
+  normaliseUnits,
   parseTrustProxyEnv,
   eventsinkVersion,
 } from "../lib/route-helpers";
@@ -83,6 +84,11 @@ fastify.post("/", async (request, reply) => {
     // attach it before forwarding, so it reaches the queue for downstream
     // storage. Omitted entirely when the header is absent (see spec contract).
     attachDomainFromOrigin(body, request.headers.origin);
+    // Normalise `playhead`/`duration` to integer ms before forwarding. Clients
+    // that declare an EPAS `sdk` are trusted as-is; a legacy browser request
+    // (raw Origin header present, no `sdk`) is assumed to report seconds and is
+    // converted. See `normaliseUnits` for the full rule.
+    normaliseUnits(body, request.headers.origin);
     // Server-derive coarse geo (country/city) from the client IP for metadata
     // events, after validation so enrichment never affects event validity. The
     // raw IP is only transient lookup input — never stored, logged, or queued.
