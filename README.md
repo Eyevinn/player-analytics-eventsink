@@ -93,6 +93,63 @@ The eventsink includes a **memory queue feature enabled by default** that provid
 
 For detailed configuration options and usage information, see [Memory Queue Documentation](MEMORY_QUEUE.md).
 
+## Units
+
+`playhead` and `duration` are stored in **milliseconds (ms)**. The eventsink
+normalises these two fields to integer ms at ingest (on `POST /`, after schema
+validation) so the queue and downstream storage always receive ms regardless of
+which client emitted the event.
+
+### Normalisation rule (`sdk` / Origin)
+
+The conversion decides per event which clients already report ms and which
+legacy clients report seconds:
+
+- **Events carrying the EPAS `sdk` field are trusted as-is.** A top-level
+  `sdk: { name, version }` (EPAS v0.7.0) declares the client already emits
+  integer-ms `playhead`/`duration`, so the event is left untouched.
+- **Otherwise, when the request carries a (non-empty) `Origin` header**, the
+  event is treated as a legacy browser event reporting seconds, and
+  `playhead`/`duration` values `>= 0` are converted seconds → ms as
+  `Math.round(value * 1000)`.
+- **Negative sentinels (`-1` = unknown) and `0` are never scaled** — `-1` stays
+  `-1` and `0` stays `0`.
+- A request with **no `Origin` header** (e.g. a native mobile client) is assumed
+  to already report ms and is left unchanged.
+
+The raw `Origin` header is tested, not the derived `domain`: an opaque
+`Origin: null` (sandboxed iframe, `file://`, some privacy modes) is still a
+browser request that is converted.
+
+### Known limit
+
+The conversion keys off the `Origin` header as a **legacy heuristic**, so it only
+applies to browser-origin events that have **no `sdk` field**. A non-browser
+legacy client that reports seconds but sends no `Origin` header cannot be
+detected and would be stored unconverted; the recommended fix for any such client
+is to adopt an EPAS `sdk` field (and emit ms directly).
+
+### Mixed historical data
+
+**Rows stored before the release that introduced this normalisation are mixed
+units** — no backfill is performed. Browser-origin events written before that
+release are in seconds; events written from that release onward are in ms.
+Consumers reading across the boundary must account for this.
+
+## Release notes (draft)
+
+> **Note:** draft only — this does not release anything. The repository has no
+> existing CHANGELOG/release-notes file, so this draft lives here in the README
+> until a release is cut by a maintainer.
+
+**Unreleased — unit normalisation at ingest**
+
+- Browser-origin `playhead`/`duration` values are now stored **×1000
+  (seconds → ms)** from this version onward. Events that carry an EPAS `sdk`
+  field are stored as-is (already ms); negative sentinels (`-1`) and `0` are not
+  scaled. See the [Units](#units) section for the full rule. Data stored before
+  this version is **not** backfilled and is therefore mixed units.
+
 # About Eyevinn Technology
 
 Eyevinn Technology is an independent consultant firm specialized in video and streaming. Independent in a way that we are not commercially tied to any platform or technology vendor.
