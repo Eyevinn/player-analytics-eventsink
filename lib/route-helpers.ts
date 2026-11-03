@@ -106,6 +106,53 @@ export function attachDomainFromOrigin(
 }
 
 /**
+ * Normalise `playhead`/`duration` to integer milliseconds in place, so the
+ * queue always receives ms regardless of which client emitted the event.
+ *
+ * EPAS v0.7.0 lets a client declare, via the optional top-level
+ * `sdk: { name, version }` field, that it already emits integer-ms
+ * playhead/duration. Trust that declaration and leave the event untouched when
+ * `sdk` is present. Otherwise we fall back to a legacy-Origin heuristic: a
+ * request that carries an HTTP `Origin` header came from a browser page, and
+ * pre-SDK web players report these fields in fractional seconds — so we convert
+ * seconds → ms. A request with no `Origin` header (e.g. a native mobile client)
+ * is assumed to already report ms and is left unchanged.
+ *
+ * We deliberately test the RAW `Origin` header, not the derived `domain`: an
+ * opaque `Origin: null` (sandboxed iframe, file://, some privacy modes) is still
+ * a browser request that needs converting, even though it derives no domain.
+ *
+ * Only `playhead` and `duration` are converted, and only when `>= 0`. A negative
+ * value is a sentinel (`-1` = unknown) and is never scaled; `0` stays `0`.
+ *
+ * Call this AFTER schema validation and before forwarding, alongside
+ * {@link attachDomainFromOrigin}.
+ *
+ * @param event the event object forwarded to the queue
+ * @param originHeader the raw `Origin` request header, if present
+ */
+export function normaliseUnits(
+  event: Record<string, any>,
+  originHeader?: string,
+): void {
+  // (1) The client declared it emits ms (EPAS v0.7.0 `sdk`) — trust it.
+  if (event.sdk) {
+    return;
+  }
+  // (2) No `sdk`, but a raw `Origin` header is present and non-empty (including
+  // the literal string "null") — treat as a legacy browser reporting seconds.
+  if (!originHeader) {
+    return;
+  }
+  for (const field of ["playhead", "duration"] as const) {
+    const value = event[field];
+    if (typeof value === "number" && value >= 0) {
+      event[field] = Math.round(value * 1000);
+    }
+  }
+}
+
+/**
  * Attach the server-derived `country`/`city` to a metadata event in place,
  * resolved from the request's client IP. Mirrors {@link attachDomainFromOrigin}:
  * derive → attach-in-place → omit on unknown.
